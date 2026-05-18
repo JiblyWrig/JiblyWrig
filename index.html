@@ -2064,6 +2064,25 @@
             color: #333;
         }
 
+
+        /* Switch to the birthday background from 19 May 2026 onward.
+           Add the image to the repo with this exact filename, or change the URL below. */
+        body.birthday-background {
+            background: linear-gradient(rgba(0,0,0,0.20), rgba(0,0,0,0.20)), #fff9fa url('birthday-bg.png');
+            background-size: cover;
+            background-position: center;
+            background-repeat: no-repeat;
+            animation: none;
+        }
+
+        body.dark-mode.birthday-background {
+            background: linear-gradient(rgba(0,0,0,0.48), rgba(0,0,0,0.48)), #121212 url('birthday-bg.png');
+            background-size: cover;
+            background-position: center;
+            background-repeat: no-repeat;
+            animation: none;
+        }
+
         #themeToggle {
             position: absolute;
             top: 15px;
@@ -2304,6 +2323,17 @@
     <script type="module">
         import { initializeApp } from "https://www.gstatic.com/firebasejs/10.8.1/firebase-app.js";
         import { getDatabase, ref, push, onValue, remove, child, set, get, onDisconnect } from "https://www.gstatic.com/firebasejs/10.8.1/firebase-database.js";
+
+
+        const BIRTHDAY_BACKGROUND_START = new Date(2026, 4, 19); // 19 May 2026 (months are 0-indexed)
+
+        const applyBirthdayBackground = () => {
+            const today = new Date();
+            today.setHours(0, 0, 0, 0);
+            document.body.classList.toggle('birthday-background', today >= BIRTHDAY_BACKGROUND_START);
+        };
+
+        applyBirthdayBackground();
 
         let galleryImages = [];
         let galleryImageKeys = [];
