@@ -87,9 +87,9 @@
 
         .main-app-container {
             display: flex;
-            gap: clamp(18px, 1.8vw, 24px);
+            gap: clamp(12px, 1.4vw, 20px);
             align-items: center;
-            max-width: min(1560px, calc(100vw - 24px));
+            max-width: min(1500px, calc(100vw - 20px));
         }
 
         .box-style {
@@ -106,10 +106,10 @@
         .left-column {
             display: flex;
             flex-direction: column;
-            gap: 18px;
+            gap: clamp(10px, 1.5vh, 15px);
             align-items: flex-start;
             justify-content: center;
-            width: 98px;
+            width: 86px;
             height: min(720px, calc(100vh - 92px));
             flex-shrink: 0;
             position: static;
@@ -287,6 +287,28 @@
             background:
                 radial-gradient(circle, #d3a4ff 2px, transparent 3px) 0 0 / 8px 8px;
             opacity: 0.95;
+        }
+
+        #drawApp .app-icon {
+            background:
+                radial-gradient(circle at 30% 22%, rgba(255,255,255,0.84), transparent 28%),
+                linear-gradient(135deg, #fff6c9, #d3a4ff 52%, #8a2be2);
+        }
+
+        #drawApp .app-icon::before {
+            content: "✎";
+            inset: 0;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-family: Georgia, 'Times New Roman', serif;
+            font-size: 42px;
+            font-weight: 900;
+            color: #6f2ed6;
+            text-shadow:
+                0 2px 0 rgba(255,255,255,0.38),
+                0 5px 12px rgba(74,53,84,0.24);
+            transform: rotate(-10deg) translateY(-1px);
         }
 
         .app-panel {
@@ -694,7 +716,7 @@
             filter: brightness(1.12);
         }
         .side-container {
-            width: clamp(260px, 23vw, 312px);
+            width: clamp(240px, 21vw, 300px);
             height: min(720px, calc(100vh - 92px));
             display: flex;
             flex-direction: column;
@@ -1209,7 +1231,7 @@
         }
 
         .chat-container {
-            width: clamp(400px, 35vw, 480px);
+            width: clamp(380px, 34vw, 470px);
             height: min(720px, calc(100vh - 92px));
             display: flex;
             flex-direction: column;
@@ -2403,7 +2425,7 @@
 
         .app-panel {
             position: absolute;
-            left: 104px;
+            left: 94px;
             top: -4px;
             width: 276px !important;
             max-height: none !important;
@@ -2467,6 +2489,15 @@
 
         #calendarApp .app-panel::before {
             top: 350px;
+        }
+
+        #drawApp .app-panel {
+            top: -184px;
+            width: 304px !important;
+        }
+
+        #drawApp .app-panel::before {
+            top: 220px;
         }
 
         .online-indicator {
@@ -2674,19 +2705,18 @@
             z-index: 2;
         }
 
-        .paint-toolbar {
-            position: relative;
-            order: 2;
-            z-index: 8;
+        .paint-box {
+            width: 100%;
             display: flex;
-            align-items: center;
+            flex-direction: column;
+            gap: 10px;
+        }
+
+        .paint-toolbar {
+            display: grid;
+            grid-template-columns: repeat(2, minmax(0, 1fr));
             gap: 8px;
-            flex-shrink: 0;
-            padding: 8px 10px;
-            border-radius: 999px;
-            background: rgba(255,255,255,0.9);
-            border: 2px solid rgba(74, 53, 84, 0.55);
-            box-shadow: 0 12px 28px rgba(0,0,0,0.22);
+            width: 100%;
             font-family: 'Fredoka', sans-serif;
         }
 
@@ -2715,6 +2745,23 @@
             box-shadow: inset 0 0 0 2px rgba(74, 53, 84, 0.35);
         }
 
+        .paint-control-row {
+            grid-column: 1 / -1;
+            display: flex;
+            align-items: center;
+            gap: 9px;
+            padding: 8px 10px;
+            border-radius: 18px;
+            background: rgba(255,255,255,0.38);
+        }
+
+        .paint-label {
+            font-size: 12px;
+            font-weight: 800;
+            color: #4a3554;
+            flex-shrink: 0;
+        }
+
         .paint-toolbar input[type="color"] {
             width: 36px;
             height: 36px;
@@ -2724,10 +2771,23 @@
             background: transparent;
             overflow: hidden;
             cursor: pointer;
+            flex-shrink: 0;
         }
 
         .paint-toolbar input[type="range"] {
-            width: 80px;
+            width: 100%;
+            min-width: 0;
+        }
+
+        .paint-hint {
+            font-size: 11px;
+            color: #4a3554;
+            line-height: 1.35;
+            text-align: center;
+            background: rgba(255,255,255,0.36);
+            border-radius: 14px;
+            padding: 8px 10px;
+            font-weight: 700;
         }
 
         .selfie-modal {
@@ -2808,15 +2868,6 @@
 <body>
 
     <canvas id="backgroundDrawCanvas" aria-label="Shared background drawing layer"></canvas>
-
-    <div id="paintToolbar" class="paint-toolbar" onclick="event.stopPropagation()">
-        <button id="paintToggleBtn" onclick="togglePaintMode()" title="Draw on the background around the card">🎨 Draw</button>
-        <button id="paintEraserBtn" onclick="toggleEraserMode()" title="Erase background drawing">Eraser</button>
-        <button onclick="undoSharedDrawing()" title="Undo your last background stroke">Undo</button>
-        <input id="paintColor" type="color" value="#8a2be2" title="Paint color">
-        <input id="paintSize" type="range" min="2" max="22" value="7" title="Paint size">
-        <button onclick="clearSharedDrawing()" title="Clear shared background drawing">Clear</button>
-    </div>
 
     <div id="selfieModal" class="selfie-modal" onclick="closeSelfieCamera()">
         <div class="selfie-modal-card" onclick="event.stopPropagation()">
@@ -2924,6 +2975,38 @@
 
                                 <div class="calendar-event-colors" id="calendarEventColors"></div>
                             </div>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="mini-app box-style draw-app" id="drawApp" onclick="toggleApp('drawApp')">
+                    <button class="app-icon-button" title="Drawing tools"><span class="app-icon">🎨</span></button>
+
+                    <div class="app-panel" onclick="event.stopPropagation()">
+                        <div class="app-panel-header">
+                            <span>Draw</span>
+                            <button class="app-close-btn" onclick="event.stopPropagation(); closeApp('drawApp')">✕</button>
+                        </div>
+
+                        <div class="paint-box">
+                            <div id="paintToolbar" class="paint-toolbar">
+                                <button id="paintToggleBtn" onclick="togglePaintMode()" title="Draw on the background around the card">🎨 Draw</button>
+                                <button id="paintEraserBtn" onclick="toggleEraserMode()" title="Erase background drawing">Eraser</button>
+                                <button onclick="undoSharedDrawing()" title="Undo your last background stroke">Undo</button>
+                                <button onclick="clearSharedDrawing()" title="Clear shared background drawing">Clear</button>
+
+                                <div class="paint-control-row">
+                                    <span class="paint-label">Colour</span>
+                                    <input id="paintColor" type="color" value="#8a2be2" title="Paint color">
+                                </div>
+
+                                <div class="paint-control-row">
+                                    <span class="paint-label">Size</span>
+                                    <input id="paintSize" type="range" min="2" max="22" value="7" title="Paint size">
+                                </div>
+                            </div>
+
+                            <div class="paint-hint">Turn Draw on, then paint on the background around the chat card. Eraser removes strokes.</div>
                         </div>
                     </div>
                 </div>
@@ -3035,12 +3118,12 @@
                     <input type="file" id="fileInput" style="display:none;" onchange="handleMediaUpload(event)">
                     <input type="file" id="selfieInput" accept="image/*" capture="user" style="display:none;" onchange="handleSelfieUpload(event)">
 
-                    <button class="tool-btn file-send-btn" onclick="document.getElementById('fileInput').click()" title="Upload image, video, ZIP, PDF, or any file" aria-label="Upload file"><span aria-hidden="true">📎</span></button>
+                    <button class="tool-btn file-send-btn" onclick="document.getElementById('fileInput').click()" title="Upload image, video, ZIP, PDF, or any file" aria-label="Upload image, video, ZIP, PDF, or any file"><span aria-hidden="true">📎</span></button>
                     <button class="tool-btn selfie-btn" onclick="openSelfieCamera()" title="Take and send a selfie" aria-label="Take and send a selfie"><span aria-hidden="true">📸</span></button>
                     <button class="emoji-toggle" onclick="toggleStickerMenu()" title="Stickers" aria-label="Open stickers">😊</button>
 
                     <div class="input-wrapper">
-                        <input type="text" id="messageInput" placeholder="Message or paste image/video..." oninput="handleTyping(); toggleClearBtn()" onkeypress="handleKeyPress(event)">
+                        <input type="text" id="messageInput" placeholder="Message, paste media, or drop a ZIP/file..." oninput="handleTyping(); toggleClearBtn()" onkeypress="handleKeyPress(event)">
                         <div id="clearBtn" class="clear-btn" onclick="clearInput()" title="Clear text">✕</div>
                     </div>
 
@@ -3070,14 +3153,13 @@
         let lightboxZoom = 1;
 
         window.toggleApp = (id) => {
-
             const app = document.getElementById(id);
+            if (!app) return;
+
             const isOpen = app.classList.contains('active');
 
-            if (id === 'calendarApp' && isOpen) return;
-
             document.querySelectorAll('.mini-app').forEach(a => {
-                if (a.id !== id && a.id !== 'calendarApp') {
+                if (a.id !== id) {
                     a.classList.remove('active');
                 }
             });
@@ -3086,8 +3168,7 @@
         };
 
         window.closeApp = (id) => {
-
-            document.getElementById(id).classList.remove('active');
+            document.getElementById(id)?.classList.remove('active');
         };
 
         window.toggleDarkMode = () => {
@@ -4440,11 +4521,23 @@
             img.src = src;
         });
 
-        const getFileEmoji = (fileName = '', mimeType = '') => {
-            const lowerName = fileName.toLowerCase();
-            const lowerMime = mimeType.toLowerCase();
+        const isZipFile = (fileName = '', mimeType = '') => {
+            const lowerName = String(fileName || '').toLowerCase();
+            const lowerMime = String(mimeType || '').toLowerCase();
 
-            if (lowerName.endsWith('.zip') || lowerName.endsWith('.rar') || lowerName.endsWith('.7z') || lowerMime.includes('zip') || lowerMime.includes('compressed')) return '🗜️';
+            return lowerName.endsWith('.zip')
+                || lowerName.endsWith('.rar')
+                || lowerName.endsWith('.7z')
+                || lowerMime.includes('zip')
+                || lowerMime.includes('x-zip-compressed')
+                || lowerMime.includes('compressed');
+        };
+
+        const getFileEmoji = (fileName = '', mimeType = '') => {
+            const lowerName = String(fileName || '').toLowerCase();
+            const lowerMime = String(mimeType || '').toLowerCase();
+
+            if (isZipFile(lowerName, lowerMime)) return '🗜️';
             if (lowerName.endsWith('.pdf') || lowerMime.includes('pdf')) return '📕';
             if (lowerName.endsWith('.doc') || lowerName.endsWith('.docx') || lowerMime.includes('word')) return '📘';
             if (lowerName.endsWith('.xls') || lowerName.endsWith('.xlsx') || lowerMime.includes('spreadsheet') || lowerMime.includes('excel')) return '📗';
@@ -4536,12 +4629,16 @@
             const reader = new FileReader();
 
             reader.onload = (event) => {
+                const fileName = file.name || 'download';
+                const mimeType = file.type || (fileName.toLowerCase().endsWith('.zip') ? 'application/zip' : 'application/octet-stream');
+
                 pushMediaMessage({
                     fileData: event.target.result,
-                    mediaType: 'file',
-                    mimeType: file.type || 'application/octet-stream',
-                    fileName: file.name || 'download',
-                    fileSize: file.size || 0
+                    mediaType: isZipFile(fileName, mimeType) ? 'zip' : 'file',
+                    mimeType,
+                    fileName,
+                    fileSize: file.size || 0,
+                    downloadable: true
                 });
             };
 
@@ -4986,13 +5083,15 @@
 
                     const fileMeta = document.createElement('div');
                     fileMeta.className = 'file-attachment-meta';
-                    fileMeta.innerText = formatFileSize(data.fileSize || 0);
+                    const zipLabel = isZipFile(data.fileName, data.mimeType) ? 'ZIP archive · ' : '';
+                    fileMeta.innerText = `${zipLabel}${formatFileSize(data.fileSize || 0)}`;
 
                     const downloadLink = document.createElement('a');
                     downloadLink.className = 'file-download-btn';
                     downloadLink.href = data.fileData;
                     downloadLink.download = data.fileName || 'download';
-                    downloadLink.innerText = '⬇ Save file';
+                    downloadLink.rel = 'noopener';
+                    downloadLink.innerText = isZipFile(data.fileName, data.mimeType) ? '⬇ Download ZIP' : '⬇ Save file';
                     downloadLink.onclick = (e) => e.stopPropagation();
 
                     fileInfo.appendChild(fileName);
