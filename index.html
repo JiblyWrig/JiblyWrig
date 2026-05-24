@@ -3144,6 +3144,34 @@
             cursor: crosshair;
         }
 
+        body.paint-mode.eraser-mode #whiteboardCanvas {
+            cursor: none;
+        }
+
+        .eraser-radius-cursor {
+            position: absolute;
+            left: 0;
+            top: 0;
+            z-index: 8;
+            display: none;
+            width: 18px;
+            height: 18px;
+            transform: translate(-50%, -50%);
+            border: 2px dashed rgba(74, 53, 84, 0.74);
+            border-radius: 50%;
+            background: rgba(255,255,255,0.10);
+            box-shadow:
+                0 0 0 1px rgba(255,255,255,0.86),
+                0 2px 8px rgba(74,53,84,0.18);
+            pointer-events: none;
+            box-sizing: border-box;
+            will-change: left, top, width, height;
+        }
+
+        .eraser-radius-cursor.visible {
+            display: block;
+        }
+
         .whiteboard-hint {
             display: none;
             position: absolute;
@@ -3593,6 +3621,7 @@
                     <div id="whiteboardSaveBadge" class="whiteboard-save-badge">Saved · Board 1</div>
                     <button id="whiteboardFullscreenBtn" class="whiteboard-fullscreen-btn" type="button" onclick="event.stopPropagation(); toggleWhiteboardFullscreen()" title="Expand whiteboard" aria-label="Expand whiteboard">⛶</button>
                     <canvas id="whiteboardCanvas" aria-label="Shared whiteboard drawing space"></canvas>
+                    <div id="eraserRadiusCursor" class="eraser-radius-cursor" aria-hidden="true"></div>
                     <div id="whiteboardNotesLayer" class="whiteboard-notes-layer" aria-label="Whiteboard notes"></div>
                     <div id="remoteDrawingCursor" class="remote-drawing-cursor" aria-hidden="true">
                         <span class="remote-cursor-crosshair"></span>
@@ -4182,10 +4211,14 @@
         let unsubscribeStrokes = null;
         let unsubscribeNotes = null;
         let unsubscribeLiveStroke = null;
+        let whiteboardSubscriptionGeneration = 0;
+        let drawingPointerInside = false;
+        let lastDrawingPointerPoint = null;
         const redoStacksByPage = Array.from({ length: WHITEBOARD_PAGE_COUNT }, () => []);
 
         const drawingCanvas = document.getElementById('whiteboardCanvas');
         const drawingCtx = drawingCanvas ? drawingCanvas.getContext('2d') : null;
+        const eraserRadiusCursor = document.getElementById('eraserRadiusCursor');
         const myDrawingPresenceRef = child(whiteboardPresenceRootRef, currentUser);
 
         const getPaintColor = () => document.getElementById('paintColor')?.value || '#8a2be2';
@@ -4345,6 +4378,10 @@
             drawingCtx.restore();
         };
 
+        const strokeBelongsToActivePage = (stroke) => Boolean(
+            stroke && (stroke.page === undefined || stroke.page === null || Number(stroke.page) === activeWhiteboardPage)
+        );
+
         function renderSharedDrawing() {
             if (!drawingCtx || !drawingCanvas || drawingRenderRaf) return;
 
@@ -4352,9 +4389,9 @@
                 drawingRenderRaf = null;
                 const { width, height } = getDrawingCanvasSize();
                 drawingCtx.clearRect(0, 0, width, height);
-                whiteboardStrokes.forEach(drawStroke);
-                if (remoteLiveStroke) drawStroke(remoteLiveStroke);
-                if (currentDrawingStroke) drawStroke(currentDrawingStroke);
+                whiteboardStrokes.filter(strokeBelongsToActivePage).forEach(drawStroke);
+                if (strokeBelongsToActivePage(remoteLiveStroke)) drawStroke(remoteLiveStroke);
+                if (strokeBelongsToActivePage(currentDrawingStroke)) drawStroke(currentDrawingStroke);
             });
         }
 
@@ -4368,6 +4405,19 @@
                 x: clampDrawingUnit((event.clientX - rect.left) / Math.max(1, rect.width)),
                 y: clampDrawingUnit((event.clientY - rect.top) / Math.max(1, rect.height))
             };
+        };
+
+        const updateEraserRadiusCursor = (point = lastDrawingPointerPoint) => {
+            if (!eraserRadiusCursor) return;
+            const visible = Boolean(paintModeEnabled && eraserModeEnabled && drawingPointerInside && point);
+            eraserRadiusCursor.classList.toggle('visible', visible);
+            document.body.classList.toggle('eraser-mode', paintModeEnabled && eraserModeEnabled);
+            if (!visible) return;
+            const diameter = Math.max(8, getPaintSize() * 2.4);
+            eraserRadiusCursor.style.width = `${diameter}px`;
+            eraserRadiusCursor.style.height = `${diameter}px`;
+            eraserRadiusCursor.style.left = `${clampDrawingUnit(Number(point.x)) * 100}%`;
+            eraserRadiusCursor.style.top = `${clampDrawingUnit(Number(point.y)) * 100}%`;
         };
 
         const shouldAddDrawingPoint = (stroke, point) => {
@@ -4392,8 +4442,9 @@
             clearTimeout(liveStrokeWriteTimer);
             liveStrokeWriteTimer = setTimeout(() => {
                 if (!currentDrawingStroke) return;
+                const strokePage = Number(currentDrawingStroke.page);
                 lastLiveStrokeWrite = Date.now();
-                set(getLiveStrokeRef(), compactStrokeForLiveSync(currentDrawingStroke));
+                set(getLiveStrokeRef(strokePage, currentUser), compactStrokeForLiveSync(currentDrawingStroke));
             }, delay);
         };
 
@@ -4485,6 +4536,7 @@
             event.preventDefault();
             event.stopPropagation();
             const rect = drawingCanvas.getBoundingClientRect();
+            const notePage = note.page === undefined || note.page === null ? activeWhiteboardPage : Number(note.page);
             const startingX = event.clientX;
             const startingY = event.clientY;
             const noteX = Number(note.x || 0.18);
@@ -4508,8 +4560,11 @@
                 delete updated.key;
                 delete updated._pendingX;
                 delete updated._pendingY;
+                updated.page = notePage;
                 setWhiteboardSaveBadge('Saving…', true);
-                set(child(getWhiteboardNotesRef(), note.key), updated).then(() => setWhiteboardSaveBadge('Saved'));
+                set(child(getWhiteboardNotesRef(notePage), note.key), updated).then(() => {
+                    if (notePage === activeWhiteboardPage) setWhiteboardSaveBadge('Saved');
+                });
             };
             element.addEventListener('pointermove', move);
             element.addEventListener('pointerup', end);
@@ -4520,7 +4575,9 @@
             const layer = document.getElementById('whiteboardNotesLayer');
             if (!layer) return;
             layer.innerHTML = '';
-            whiteboardNotes.forEach((note, index) => {
+            whiteboardNotes
+                .filter((note) => note.page === undefined || note.page === null || Number(note.page) === activeWhiteboardPage)
+                .forEach((note, index) => {
                 const element = document.createElement('div');
                 element.className = 'whiteboard-note';
                 element.style.left = `${Math.min(0.76, clampDrawingUnit(Number(note.x ?? 0.17))) * 100}%`;
@@ -4546,8 +4603,11 @@
                     removeButton.onclick = (event) => {
                         event.stopPropagation();
                         if (!confirm('Delete this note?')) return;
+                        const notePage = note.page === undefined || note.page === null ? activeWhiteboardPage : Number(note.page);
                         setWhiteboardSaveBadge('Saving…', true);
-                        remove(child(getWhiteboardNotesRef(), note.key)).then(() => setWhiteboardSaveBadge('Saved'));
+                        remove(child(getWhiteboardNotesRef(notePage), note.key)).then(() => {
+                            if (notePage === activeWhiteboardPage) setWhiteboardSaveBadge('Saved');
+                        });
                     };
                     element.appendChild(removeButton);
                 }
@@ -4559,29 +4619,45 @@
             unsubscribeStrokes?.();
             unsubscribeNotes?.();
             unsubscribeLiveStroke?.();
+            const subscribedPage = activeWhiteboardPage;
+            const generation = ++whiteboardSubscriptionGeneration;
             whiteboardStrokes = [];
             whiteboardNotes = [];
             remoteLiveStroke = null;
             renderSharedDrawing();
             renderWhiteboardNotes();
 
-            unsubscribeStrokes = onValue(getWhiteboardStrokesRef(), (snapshot) => {
-                whiteboardStrokes = [];
+            const subscriptionIsCurrent = () => generation === whiteboardSubscriptionGeneration && subscribedPage === activeWhiteboardPage;
+
+            unsubscribeStrokes = onValue(getWhiteboardStrokesRef(subscribedPage), (snapshot) => {
+                if (!subscriptionIsCurrent()) return;
+                const pageStrokes = [];
                 if (snapshot.exists()) {
-                    snapshot.forEach((childNode) => whiteboardStrokes.push({ key: childNode.key, ...childNode.val() }));
+                    snapshot.forEach((childNode) => {
+                        const stroke = { key: childNode.key, ...childNode.val() };
+                        if (stroke.page === undefined || stroke.page === null || Number(stroke.page) === subscribedPage) pageStrokes.push(stroke);
+                    });
                 }
+                whiteboardStrokes = pageStrokes;
                 renderSharedDrawing();
             });
-            unsubscribeNotes = onValue(getWhiteboardNotesRef(), (snapshot) => {
-                whiteboardNotes = [];
+            unsubscribeNotes = onValue(getWhiteboardNotesRef(subscribedPage), (snapshot) => {
+                if (!subscriptionIsCurrent()) return;
+                const pageNotes = [];
                 if (snapshot.exists()) {
-                    snapshot.forEach((childNode) => whiteboardNotes.push({ key: childNode.key, ...childNode.val() }));
+                    snapshot.forEach((childNode) => {
+                        const note = { key: childNode.key, ...childNode.val() };
+                        if (note.page === undefined || note.page === null || Number(note.page) === subscribedPage) pageNotes.push(note);
+                    });
                 }
+                whiteboardNotes = pageNotes;
                 renderWhiteboardNotes();
             });
-            unsubscribeLiveStroke = onValue(getLiveStrokeRef(activeWhiteboardPage, getWhiteboardPartnerName()), (snapshot) => {
+            unsubscribeLiveStroke = onValue(getLiveStrokeRef(subscribedPage, getWhiteboardPartnerName()), (snapshot) => {
+                if (!subscriptionIsCurrent()) return;
                 const liveValue = snapshot.exists() ? snapshot.val() : null;
-                remoteLiveStroke = liveValue && Date.now() - Number(liveValue.updatedAt || 0) < 1900 ? liveValue : null;
+                const pageMatches = liveValue && (liveValue.page === undefined || liveValue.page === null || Number(liveValue.page) === subscribedPage);
+                remoteLiveStroke = pageMatches && Date.now() - Number(liveValue.updatedAt || 0) < 1900 ? liveValue : null;
                 renderSharedDrawing();
             });
         };
@@ -4607,6 +4683,7 @@
             btn?.classList.toggle('active', paintModeEnabled);
             if (btn) btn.innerText = paintModeEnabled ? '✏️ Drawing' : '✏️ Draw';
             if (!paintModeEnabled) writeMyDrawingPresence(null, false, true);
+            updateEraserRadiusCursor();
             resizeDrawingCanvas();
         };
 
@@ -4616,6 +4693,7 @@
             if (eraserModeEnabled) {
                 eraserModeEnabled = false;
                 document.getElementById('paintEraserBtn')?.classList.remove('active');
+                updateEraserRadiusCursor();
             }
             if (!paintModeEnabled) window.togglePaintMode();
         };
@@ -4651,6 +4729,7 @@
             eraserModeEnabled = !eraserModeEnabled;
             if (eraserModeEnabled && !paintModeEnabled) window.togglePaintMode();
             document.getElementById('paintEraserBtn')?.classList.toggle('active', eraserModeEnabled);
+            updateEraserRadiusCursor();
         };
 
         window.undoSharedDrawing = async () => {
@@ -4672,7 +4751,7 @@
             updateRedoButton();
             if (!strokeData) return;
             setWhiteboardSaveBadge('Saving…', true);
-            await push(getWhiteboardStrokesRef(), { ...strokeData, timestamp: Date.now(), restoredByRedo: true });
+            await push(getWhiteboardStrokesRef(), { ...strokeData, page: activeWhiteboardPage, timestamp: Date.now(), restoredByRedo: true });
             setWhiteboardSaveBadge('Saved');
         };
 
@@ -4685,6 +4764,7 @@
             push(getWhiteboardNotesRef(), {
                 text: trimmed,
                 user: currentUser,
+                page: activeWhiteboardPage,
                 x: 0.12 + offset,
                 y: 0.16 + offset,
                 timestamp: Date.now()
@@ -4700,6 +4780,19 @@
         };
 
         if (drawingCanvas) {
+            document.getElementById('paintSize')?.addEventListener('input', () => updateEraserRadiusCursor());
+
+            drawingCanvas.addEventListener('pointerenter', (event) => {
+                drawingPointerInside = true;
+                lastDrawingPointerPoint = eventToDrawingPoint(event);
+                updateEraserRadiusCursor();
+            });
+
+            drawingCanvas.addEventListener('pointerleave', () => {
+                drawingPointerInside = false;
+                updateEraserRadiusCursor();
+            });
+
             drawingCanvas.addEventListener('pointerdown', (event) => {
                 if (!paintModeEnabled) return;
                 event.preventDefault();
@@ -4707,22 +4800,28 @@
                 redoStacksByPage[activeWhiteboardPage] = [];
                 updateRedoButton();
                 const point = eventToDrawingPoint(event);
+                lastDrawingPointerPoint = point;
+                updateEraserRadiusCursor(point);
                 currentDrawingStroke = {
                     mode: eraserModeEnabled ? 'erase' : 'draw',
                     color: eraserModeEnabled ? '#000000' : getPaintColor(),
                     size: getPaintSize(),
                     brush: eraserModeEnabled ? 'smooth' : getPaintBrush(),
+                    page: activeWhiteboardPage,
                     user: currentUser,
                     timestamp: Date.now(),
                     points: [point]
                 };
-                onDisconnect(getLiveStrokeRef()).remove();
+                onDisconnect(getLiveStrokeRef(activeWhiteboardPage, currentUser)).remove();
                 writeMyDrawingPresence(point, true, true);
                 queueLiveStrokeWrite(true);
                 renderSharedDrawing();
             });
 
             drawingCanvas.addEventListener('pointermove', (event) => {
+                drawingPointerInside = true;
+                lastDrawingPointerPoint = eventToDrawingPoint(event);
+                updateEraserRadiusCursor();
                 if (!currentDrawingStroke) return;
                 event.preventDefault();
                 const bufferedEvents = typeof event.getCoalescedEvents === 'function' ? event.getCoalescedEvents() : [event];
@@ -4749,7 +4848,7 @@
                 currentDrawingStroke = null;
                 clearTimeout(liveStrokeWriteTimer);
                 writeMyDrawingPresence(strokeToSave.points[strokeToSave.points.length - 1], false, true);
-                const completedOnPage = activeWhiteboardPage;
+                const completedOnPage = Number(strokeToSave.page);
                 const completedStrokeRef = getWhiteboardStrokesRef(completedOnPage);
                 const completedLiveRef = getLiveStrokeRef(completedOnPage, currentUser);
                 if (strokeToSave.points.length > 1) {
