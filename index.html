@@ -4203,6 +4203,8 @@
         let activePaintBrush = 'smooth';
         let whiteboardExpanded = false;
         let drawingRenderRaf = null;
+        let drawingBaseDirty = true;
+        let activeDrawingPointerId = null;
         let lastLiveStrokeWrite = 0;
         let lastPresenceWrite = 0;
         let liveStrokeWriteTimer = null;
@@ -4218,6 +4220,11 @@
 
         const drawingCanvas = document.getElementById('whiteboardCanvas');
         const drawingCtx = drawingCanvas ? drawingCanvas.getContext('2d') : null;
+        /* Saved strokes are cached offscreen. While a stroke is in progress, only that
+           lightweight preview is composited over the cache instead of replaying every
+           textured stroke on every pointer event. */
+        const savedDrawingCanvas = document.createElement('canvas');
+        const savedDrawingCtx = savedDrawingCanvas.getContext('2d');
         const eraserRadiusCursor = document.getElementById('eraserRadiusCursor');
         const myDrawingPresenceRef = child(whiteboardPresenceRootRef, currentUser);
 
@@ -4234,11 +4241,16 @@
             : child(getBoardRootRef(page), 'notes');
         const getLiveStrokeRef = (page = activeWhiteboardPage, user = currentUser) => child(whiteboardLiveRootRef, `${page + 1}/${user}`);
 
-        const setWhiteboardSaveBadge = (text, saving = false) => {
+        const setWhiteboardSaveBadge = (text, saving = false, page = activeWhiteboardPage) => {
             const badge = document.getElementById('whiteboardSaveBadge');
-            if (!badge) return;
-            badge.innerText = `${text} · Board ${activeWhiteboardPage + 1}`;
+            if (!badge || Number(page) !== activeWhiteboardPage) return;
+            badge.innerText = `${text} · Board ${Number(page) + 1}`;
             badge.classList.toggle('saving', saving);
+        };
+
+        const handleWhiteboardWriteError = (action, error, page = activeWhiteboardPage) => {
+            if (Number(page) === activeWhiteboardPage) setWhiteboardSaveBadge('Not saved', false, page);
+            alert(`Could not ${action}: ${error?.message || 'Please try again.'}`);
         };
 
         const getDrawingCanvasSize = () => ({
@@ -4247,36 +4259,42 @@
         });
 
         const resizeDrawingCanvas = () => {
-            if (!drawingCanvas || !drawingCtx) return;
+            if (!drawingCanvas || !drawingCtx || !savedDrawingCtx) return;
 
             const { width, height } = getDrawingCanvasSize();
             const ratio = Math.min(window.devicePixelRatio || 1, DRAWING_MAX_DEVICE_PIXEL_RATIO);
-            drawingCanvas.width = Math.max(1, Math.round(width * ratio));
-            drawingCanvas.height = Math.max(1, Math.round(height * ratio));
+            const pixelWidth = Math.max(1, Math.round(width * ratio));
+            const pixelHeight = Math.max(1, Math.round(height * ratio));
+            drawingCanvas.width = pixelWidth;
+            drawingCanvas.height = pixelHeight;
+            savedDrawingCanvas.width = pixelWidth;
+            savedDrawingCanvas.height = pixelHeight;
             drawingCtx.setTransform(ratio, 0, 0, ratio, 0, 0);
-            renderSharedDrawing();
+            savedDrawingCtx.setTransform(ratio, 0, 0, ratio, 0, 0);
+            drawingBaseDirty = true;
+            renderSharedDrawing(true);
         };
 
-        const drawPolyline = (points, color, lineWidth, alpha) => {
-            if (!drawingCtx || points.length < 2) return;
-            drawingCtx.strokeStyle = color;
-            drawingCtx.lineWidth = Math.max(0.5, lineWidth);
-            drawingCtx.globalAlpha = alpha;
-            drawingCtx.beginPath();
-            drawingCtx.moveTo(points[0].x, points[0].y);
+        const drawPolyline = (context, points, color, lineWidth, alpha) => {
+            if (!context || points.length < 2) return;
+            context.strokeStyle = color;
+            context.lineWidth = Math.max(0.5, lineWidth);
+            context.globalAlpha = alpha;
+            context.beginPath();
+            context.moveTo(points[0].x, points[0].y);
 
             if (points.length === 2) {
-                drawingCtx.lineTo(points[1].x, points[1].y);
+                context.lineTo(points[1].x, points[1].y);
             } else {
                 for (let index = 1; index < points.length - 1; index += 1) {
                     const midpointX = (points[index].x + points[index + 1].x) / 2;
                     const midpointY = (points[index].y + points[index + 1].y) / 2;
-                    drawingCtx.quadraticCurveTo(points[index].x, points[index].y, midpointX, midpointY);
+                    context.quadraticCurveTo(points[index].x, points[index].y, midpointX, midpointY);
                 }
-                drawingCtx.lineTo(points[points.length - 1].x, points[points.length - 1].y);
+                context.lineTo(points[points.length - 1].x, points[points.length - 1].y);
             }
 
-            drawingCtx.stroke();
+            context.stroke();
         };
 
         const createStrokeRandom = (stroke) => {
@@ -4306,8 +4324,8 @@
             }
         };
 
-        const drawStroke = (stroke) => {
-            if (!drawingCtx || !stroke || !Array.isArray(stroke.points) || stroke.points.length === 0) return;
+        const drawStroke = (context, stroke) => {
+            if (!context || !stroke || !Array.isArray(stroke.points) || stroke.points.length === 0) return;
 
             const { width, height } = getDrawingCanvasSize();
             const points = stroke.points.map((point) => ({
@@ -4318,92 +4336,101 @@
             const color = stroke.color || '#8a2be2';
             const brush = SUPPORTED_PAINT_BRUSHES.includes(stroke.brush) ? stroke.brush : 'smooth';
 
-            drawingCtx.save();
-            drawingCtx.lineCap = 'round';
-            drawingCtx.lineJoin = 'round';
-            drawingCtx.globalCompositeOperation = stroke.mode === 'erase' ? 'destination-out' : 'source-over';
+            context.save();
+            context.lineCap = 'round';
+            context.lineJoin = 'round';
+            context.globalCompositeOperation = stroke.mode === 'erase' ? 'destination-out' : 'source-over';
 
             /* A click/tap is a real mark too. Previously single-point strokes were invisible,
                which made the board appear broken whenever movement sampling was minimal. */
             if (points.length === 1) {
-                drawingCtx.fillStyle = stroke.mode === 'erase' ? 'rgba(0,0,0,1)' : color;
-                drawingCtx.globalAlpha = stroke.mode === 'erase' ? 1 : (brush === 'marker' ? 0.46 : 0.92);
-                drawingCtx.beginPath();
-                drawingCtx.arc(points[0].x, points[0].y, Math.max(1, size * (stroke.mode === 'erase' ? 1.2 : 0.5)), 0, Math.PI * 2);
-                drawingCtx.fill();
-                drawingCtx.restore();
+                context.fillStyle = stroke.mode === 'erase' ? 'rgba(0,0,0,1)' : color;
+                context.globalAlpha = stroke.mode === 'erase' ? 1 : (brush === 'marker' ? 0.46 : 0.92);
+                context.beginPath();
+                context.arc(points[0].x, points[0].y, Math.max(1, size * (stroke.mode === 'erase' ? 1.2 : 0.5)), 0, Math.PI * 2);
+                context.fill();
+                context.restore();
                 return;
             }
 
             if (stroke.mode === 'erase') {
-                drawPolyline(points, 'rgba(0,0,0,1)', size * 2.4, 1);
-                drawingCtx.restore();
+                drawPolyline(context, points, 'rgba(0,0,0,1)', size * 2.4, 1);
+                context.restore();
                 return;
             }
 
             if (brush === 'marker') {
-                drawPolyline(points, color, size * 2.2, 0.12);
-                drawPolyline(points, color, size * 1.46, 0.48);
+                drawPolyline(context, points, color, size * 2.2, 0.12);
+                drawPolyline(context, points, color, size * 1.46, 0.48);
             } else if (brush === 'pencil') {
                 const random = createStrokeRandom(stroke);
-                drawPolyline(points, color, Math.max(0.8, size * 0.58), 0.68);
+                drawPolyline(context, points, color, Math.max(0.8, size * 0.58), 0.68);
                 for (let pass = 0; pass < 3; pass += 1) {
                     const jittered = points.map((point) => ({
                         x: point.x + (random() - 0.5) * size * 0.34,
                         y: point.y + (random() - 0.5) * size * 0.34
                     }));
-                    drawPolyline(jittered, color, Math.max(0.55, size * 0.22), 0.16);
+                    drawPolyline(context, jittered, color, Math.max(0.55, size * 0.22), 0.16);
                 }
             } else if (brush === 'chalk') {
                 const random = createStrokeRandom(stroke);
-                drawPolyline(points, color, size * 0.84, 0.2);
-                drawingCtx.fillStyle = color;
+                drawPolyline(context, points, color, size * 0.84, 0.2);
+                context.fillStyle = color;
                 samplePolyline(points, Math.max(1.4, size * 0.42), (x, y) => {
                     const specks = Math.min(9, 3 + Math.ceil(size / 3));
                     for (let speck = 0; speck < specks; speck += 1) {
                         const angle = random() * Math.PI * 2;
                         const radius = random() * size * 0.64;
-                        drawingCtx.globalAlpha = 0.07 + random() * 0.26;
-                        drawingCtx.beginPath();
-                        drawingCtx.arc(x + Math.cos(angle) * radius, y + Math.sin(angle) * radius, 0.35 + random() * Math.min(1.35, size * 0.16), 0, Math.PI * 2);
-                        drawingCtx.fill();
+                        context.globalAlpha = 0.07 + random() * 0.26;
+                        context.beginPath();
+                        context.arc(x + Math.cos(angle) * radius, y + Math.sin(angle) * radius, 0.35 + random() * Math.min(1.35, size * 0.16), 0, Math.PI * 2);
+                        context.fill();
                     }
                 });
             } else if (brush === 'spray') {
                 const random = createStrokeRandom(stroke);
-                drawingCtx.fillStyle = color;
+                context.fillStyle = color;
                 samplePolyline(points, Math.max(1.6, size * 0.62), (x, y) => {
                     const dots = Math.min(18, 5 + Math.ceil(size * 0.62));
                     for (let dot = 0; dot < dots; dot += 1) {
                         const angle = random() * Math.PI * 2;
                         const radius = Math.sqrt(random()) * size * 1.55;
-                        drawingCtx.globalAlpha = 0.15 + random() * 0.38;
-                        drawingCtx.beginPath();
-                        drawingCtx.arc(x + Math.cos(angle) * radius, y + Math.sin(angle) * radius, 0.45 + random() * Math.min(1.45, size * 0.13), 0, Math.PI * 2);
-                        drawingCtx.fill();
+                        context.globalAlpha = 0.15 + random() * 0.38;
+                        context.beginPath();
+                        context.arc(x + Math.cos(angle) * radius, y + Math.sin(angle) * radius, 0.45 + random() * Math.min(1.45, size * 0.13), 0, Math.PI * 2);
+                        context.fill();
                     }
                 });
             } else {
-                drawPolyline(points, color, size, 0.92);
+                drawPolyline(context, points, color, size, 0.92);
             }
 
-            drawingCtx.restore();
+            context.restore();
         };
 
         const strokeBelongsToActivePage = (stroke) => Boolean(
             stroke && (stroke.page === undefined || stroke.page === null || Number(stroke.page) === activeWhiteboardPage)
         );
 
-        function renderSharedDrawing() {
-            if (!drawingCtx || !drawingCanvas || drawingRenderRaf) return;
+        function renderSharedDrawing(includeSaved = true) {
+            if (!drawingCtx || !savedDrawingCtx || !drawingCanvas) return;
+            if (includeSaved) drawingBaseDirty = true;
+            if (drawingRenderRaf) return;
 
             drawingRenderRaf = requestAnimationFrame(() => {
                 drawingRenderRaf = null;
                 const { width, height } = getDrawingCanvasSize();
+
+                if (drawingBaseDirty) {
+                    savedDrawingCtx.clearRect(0, 0, width, height);
+                    whiteboardStrokes.filter(strokeBelongsToActivePage).forEach((stroke) => drawStroke(savedDrawingCtx, stroke));
+                    drawingBaseDirty = false;
+                }
+
                 drawingCtx.clearRect(0, 0, width, height);
-                whiteboardStrokes.filter(strokeBelongsToActivePage).forEach(drawStroke);
-                if (strokeBelongsToActivePage(remoteLiveStroke)) drawStroke(remoteLiveStroke);
-                if (strokeBelongsToActivePage(currentDrawingStroke)) drawStroke(currentDrawingStroke);
+                drawingCtx.drawImage(savedDrawingCanvas, 0, 0, width, height);
+                if (strokeBelongsToActivePage(remoteLiveStroke)) drawStroke(drawingCtx, remoteLiveStroke);
+                if (strokeBelongsToActivePage(currentDrawingStroke)) drawStroke(drawingCtx, currentDrawingStroke);
             });
         }
 
@@ -4581,8 +4608,8 @@
                 updated.page = notePage;
                 setWhiteboardSaveBadge('Saving…', true);
                 set(child(getWhiteboardNotesRef(notePage), note.key), updated).then(() => {
-                    if (notePage === activeWhiteboardPage) setWhiteboardSaveBadge('Saved');
-                });
+                    setWhiteboardSaveBadge('Saved', false, notePage);
+                }).catch((error) => handleWhiteboardWriteError('move the note', error, notePage));
             };
             element.addEventListener('pointermove', move);
             element.addEventListener('pointerup', end);
@@ -4624,8 +4651,8 @@
                         const notePage = note.page === undefined || note.page === null ? activeWhiteboardPage : Number(note.page);
                         setWhiteboardSaveBadge('Saving…', true);
                         remove(child(getWhiteboardNotesRef(notePage), note.key)).then(() => {
-                            if (notePage === activeWhiteboardPage) setWhiteboardSaveBadge('Saved');
-                        });
+                            setWhiteboardSaveBadge('Saved', false, notePage);
+                        }).catch((error) => handleWhiteboardWriteError('delete the note', error, notePage));
                     };
                     element.appendChild(removeButton);
                 }
@@ -4676,7 +4703,7 @@
                 const liveValue = snapshot.exists() ? snapshot.val() : null;
                 const pageMatches = liveValue && (liveValue.page === undefined || liveValue.page === null || Number(liveValue.page) === subscribedPage);
                 remoteLiveStroke = pageMatches && Date.now() - Number(liveValue.updatedAt || 0) < 1900 ? liveValue : null;
-                renderSharedDrawing();
+                renderSharedDrawing(false);
             });
         };
 
@@ -4733,6 +4760,17 @@
 
         window.addEventListener('keydown', (event) => {
             if (event.key === 'Escape' && whiteboardExpanded) window.toggleWhiteboardFullscreen();
+
+            const target = event.target;
+            const isTextEditing = Boolean(
+                target && (
+                    target.tagName === 'TEXTAREA' ||
+                    (target.tagName === 'INPUT' && !['range', 'color', 'button'].includes(target.type)) ||
+                    target.isContentEditable
+                )
+            );
+            if (isTextEditing) return;
+
             if ((event.ctrlKey || event.metaKey) && event.key.toLowerCase() === 'z' && !event.shiftKey) {
                 event.preventDefault();
                 window.undoSharedDrawing();
@@ -4751,50 +4789,69 @@
         };
 
         window.undoSharedDrawing = async () => {
+            const actionPage = activeWhiteboardPage;
             const strokeToUndo = [...whiteboardStrokes].reverse().find((stroke) => stroke.user === currentUser && stroke.key);
             if (!strokeToUndo) {
                 alert('No whiteboard stroke to undo on this board.');
                 return;
             }
             const { key, ...strokeData } = strokeToUndo;
-            redoStacksByPage[activeWhiteboardPage].push(strokeData);
+            redoStacksByPage[actionPage].push(strokeData);
             updateRedoButton();
-            setWhiteboardSaveBadge('Saving…', true);
-            await remove(child(getWhiteboardStrokesRef(), key));
-            setWhiteboardSaveBadge('Saved');
+            setWhiteboardSaveBadge('Saving…', true, actionPage);
+            try {
+                await remove(child(getWhiteboardStrokesRef(actionPage), key));
+                setWhiteboardSaveBadge('Saved', false, actionPage);
+            } catch (error) {
+                redoStacksByPage[actionPage].pop();
+                updateRedoButton();
+                handleWhiteboardWriteError('undo the stroke', error, actionPage);
+            }
         };
 
         window.redoSharedDrawing = async () => {
-            const strokeData = redoStacksByPage[activeWhiteboardPage].pop();
+            const actionPage = activeWhiteboardPage;
+            const strokeData = redoStacksByPage[actionPage].pop();
             updateRedoButton();
             if (!strokeData) return;
-            setWhiteboardSaveBadge('Saving…', true);
-            await push(getWhiteboardStrokesRef(), { ...strokeData, page: activeWhiteboardPage, timestamp: Date.now(), restoredByRedo: true });
-            setWhiteboardSaveBadge('Saved');
+            setWhiteboardSaveBadge('Saving…', true, actionPage);
+            try {
+                await push(getWhiteboardStrokesRef(actionPage), { ...strokeData, page: actionPage, timestamp: Date.now(), restoredByRedo: true });
+                setWhiteboardSaveBadge('Saved', false, actionPage);
+            } catch (error) {
+                redoStacksByPage[actionPage].push(strokeData);
+                updateRedoButton();
+                handleWhiteboardWriteError('redo the stroke', error, actionPage);
+            }
         };
 
         window.addWhiteboardNote = () => {
+            const notePage = activeWhiteboardPage;
             const text = prompt('Type a handwritten note for this whiteboard:');
             const trimmed = text?.trim().slice(0, 180);
             if (!trimmed) return;
             const offset = (whiteboardNotes.length % 5) * 0.045;
-            setWhiteboardSaveBadge('Saving…', true);
-            push(getWhiteboardNotesRef(), {
+            setWhiteboardSaveBadge('Saving…', true, notePage);
+            push(getWhiteboardNotesRef(notePage), {
                 text: trimmed,
                 user: currentUser,
-                page: activeWhiteboardPage,
+                page: notePage,
                 x: 0.12 + offset,
                 y: 0.16 + offset,
                 timestamp: Date.now()
-            }).then(() => setWhiteboardSaveBadge('Saved'));
+            }).then(() => setWhiteboardSaveBadge('Saved', false, notePage))
+              .catch((error) => handleWhiteboardWriteError('save the note', error, notePage));
         };
 
         window.clearSharedDrawing = () => {
-            if (!confirm(`Clear saved whiteboard ${activeWhiteboardPage + 1} for both of you?`)) return;
-            redoStacksByPage[activeWhiteboardPage] = [];
+            const clearPage = activeWhiteboardPage;
+            if (!confirm(`Clear saved whiteboard ${clearPage + 1} for both of you?`)) return;
+            redoStacksByPage[clearPage] = [];
             updateRedoButton();
-            setWhiteboardSaveBadge('Saving…', true);
-            Promise.all([remove(getWhiteboardStrokesRef()), remove(getWhiteboardNotesRef())]).then(() => setWhiteboardSaveBadge('Saved'));
+            setWhiteboardSaveBadge('Saving…', true, clearPage);
+            Promise.all([remove(getWhiteboardStrokesRef(clearPage)), remove(getWhiteboardNotesRef(clearPage))])
+                .then(() => setWhiteboardSaveBadge('Saved', false, clearPage))
+                .catch((error) => handleWhiteboardWriteError('clear this whiteboard', error, clearPage));
         };
 
         if (drawingCanvas) {
@@ -4812,8 +4869,10 @@
             });
 
             drawingCanvas.addEventListener('pointerdown', (event) => {
-                if (!paintModeEnabled) return;
+                if (!paintModeEnabled || currentDrawingStroke || event.isPrimary === false) return;
+                if (event.pointerType === 'mouse' && event.button !== 0) return;
                 event.preventDefault();
+                activeDrawingPointerId = event.pointerId;
                 drawingCanvas.setPointerCapture?.(event.pointerId);
                 redoStacksByPage[activeWhiteboardPage] = [];
                 updateRedoButton();
@@ -4833,10 +4892,11 @@
                 onDisconnect(getLiveStrokeRef(activeWhiteboardPage, currentUser)).remove();
                 writeMyDrawingPresence(point, true, true);
                 queueLiveStrokeWrite(true);
-                renderSharedDrawing();
+                renderSharedDrawing(false);
             });
 
             drawingCanvas.addEventListener('pointermove', (event) => {
+                if (currentDrawingStroke && activeDrawingPointerId !== null && event.pointerId !== activeDrawingPointerId) return;
                 drawingPointerInside = true;
                 lastDrawingPointerPoint = eventToDrawingPoint(event);
                 updateEraserRadiusCursor();
@@ -4855,16 +4915,21 @@
                 if (point) writeMyDrawingPresence(point, true);
                 if (addedPoint) {
                     queueLiveStrokeWrite();
-                    renderSharedDrawing();
+                    renderSharedDrawing(false);
                 }
             });
 
             const finishDrawingStroke = (event) => {
-                if (!currentDrawingStroke) return;
+                if (!currentDrawingStroke || (activeDrawingPointerId !== null && event.pointerId !== activeDrawingPointerId)) return;
                 event.preventDefault();
                 const strokeToSave = currentDrawingStroke;
                 currentDrawingStroke = null;
+                const completedPointerId = activeDrawingPointerId;
+                activeDrawingPointerId = null;
                 clearTimeout(liveStrokeWriteTimer);
+                if (completedPointerId !== null && drawingCanvas.hasPointerCapture?.(completedPointerId)) {
+                    drawingCanvas.releasePointerCapture(completedPointerId);
+                }
                 writeMyDrawingPresence(strokeToSave.points[strokeToSave.points.length - 1], false, true);
                 const completedOnPage = Number(strokeToSave.page);
                 const completedStrokeRef = getWhiteboardStrokesRef(completedOnPage);
@@ -4874,9 +4939,12 @@
                     push(completedStrokeRef, strokeToSave)
                         .then(() => remove(completedLiveRef))
                         .then(() => {
-                            if (completedOnPage === activeWhiteboardPage) setWhiteboardSaveBadge('Saved');
+                            setWhiteboardSaveBadge('Saved', false, completedOnPage);
                         })
-                        .catch((error) => alert(`Could not share whiteboard drawing: ${error.message}`));
+                        .catch((error) => {
+                            remove(completedLiveRef);
+                            handleWhiteboardWriteError('share the whiteboard drawing', error, completedOnPage);
+                        });
                 } else {
                     remove(completedLiveRef);
                     renderSharedDrawing();
@@ -4899,7 +4967,7 @@
             renderRemoteCursor(remoteDrawingPresence);
             if (remoteLiveStroke && Date.now() - Number(remoteLiveStroke.updatedAt || 0) >= 1900) {
                 remoteLiveStroke = null;
-                renderSharedDrawing();
+                renderSharedDrawing(false);
             }
         }, 420);
         drawingPresenceHeartbeat = setInterval(() => {
