@@ -4307,7 +4307,7 @@
         };
 
         const drawStroke = (stroke) => {
-            if (!drawingCtx || !stroke || !Array.isArray(stroke.points) || stroke.points.length < 2) return;
+            if (!drawingCtx || !stroke || !Array.isArray(stroke.points) || stroke.points.length === 0) return;
 
             const { width, height } = getDrawingCanvasSize();
             const points = stroke.points.map((point) => ({
@@ -4322,6 +4322,18 @@
             drawingCtx.lineCap = 'round';
             drawingCtx.lineJoin = 'round';
             drawingCtx.globalCompositeOperation = stroke.mode === 'erase' ? 'destination-out' : 'source-over';
+
+            /* A click/tap is a real mark too. Previously single-point strokes were invisible,
+               which made the board appear broken whenever movement sampling was minimal. */
+            if (points.length === 1) {
+                drawingCtx.fillStyle = stroke.mode === 'erase' ? 'rgba(0,0,0,1)' : color;
+                drawingCtx.globalAlpha = stroke.mode === 'erase' ? 1 : (brush === 'marker' ? 0.46 : 0.92);
+                drawingCtx.beginPath();
+                drawingCtx.arc(points[0].x, points[0].y, Math.max(1, size * (stroke.mode === 'erase' ? 1.2 : 0.5)), 0, Math.PI * 2);
+                drawingCtx.fill();
+                drawingCtx.restore();
+                return;
+            }
 
             if (stroke.mode === 'erase') {
                 drawPolyline(points, 'rgba(0,0,0,1)', size * 2.4, 1);
@@ -4396,14 +4408,19 @@
         }
 
         const eventToDrawingPoint = (event) => {
-            const { width, height } = getDrawingCanvasSize();
-            if (event.target === drawingCanvas && Number.isFinite(event.offsetX) && Number.isFinite(event.offsetY)) {
-                return { x: clampDrawingUnit(event.offsetX / width), y: clampDrawingUnit(event.offsetY / height) };
-            }
             const rect = drawingCanvas.getBoundingClientRect();
+            const clientX = Number(event.clientX);
+            const clientY = Number(event.clientY);
+
+            /* Use viewport coordinates consistently. offsetX/offsetY can become stale or jump
+               after pointer capture and while the tilted container is being flattened. */
+            if (!Number.isFinite(clientX) || !Number.isFinite(clientY)) {
+                return lastDrawingPointerPoint || { x: 0, y: 0 };
+            }
+
             return {
-                x: clampDrawingUnit((event.clientX - rect.left) / Math.max(1, rect.width)),
-                y: clampDrawingUnit((event.clientY - rect.top) / Math.max(1, rect.height))
+                x: clampDrawingUnit((clientX - rect.left) / Math.max(1, rect.width)),
+                y: clampDrawingUnit((clientY - rect.top) / Math.max(1, rect.height))
             };
         };
 
@@ -4423,7 +4440,8 @@
         const shouldAddDrawingPoint = (stroke, point) => {
             const last = stroke.points[stroke.points.length - 1];
             if (!last) return true;
-            return Math.hypot(point.x - last.x, point.y - last.y) > 0.0018;
+            const { width, height } = getDrawingCanvasSize();
+            return Math.hypot((point.x - last.x) * width, (point.y - last.y) * height) >= 0.55;
         };
 
         const compactStrokeForLiveSync = (stroke) => {
@@ -4851,7 +4869,7 @@
                 const completedOnPage = Number(strokeToSave.page);
                 const completedStrokeRef = getWhiteboardStrokesRef(completedOnPage);
                 const completedLiveRef = getLiveStrokeRef(completedOnPage, currentUser);
-                if (strokeToSave.points.length > 1) {
+                if (strokeToSave.points.length > 0) {
                     setWhiteboardSaveBadge('Saving…', true);
                     push(completedStrokeRef, strokeToSave)
                         .then(() => remove(completedLiveRef))
@@ -4867,6 +4885,7 @@
 
             drawingCanvas.addEventListener('pointerup', finishDrawingStroke);
             drawingCanvas.addEventListener('pointercancel', finishDrawingStroke);
+            drawingCanvas.addEventListener('lostpointercapture', finishDrawingStroke);
         }
 
         onDisconnect(myDrawingPresenceRef).set({ isDrawing: false, timestamp: Date.now(), page: activeWhiteboardPage, user: currentUser });
