@@ -86,6 +86,7 @@
         }
 
         .main-app-container {
+            position: relative;
             display: flex;
             gap: clamp(12px, 1.4vw, 20px);
             align-items: center;
@@ -2816,6 +2817,80 @@
                 0 8px 18px rgba(74,53,84,0.16);
         }
 
+        .whiteboard-fullscreen-btn {
+            position: absolute;
+            top: 12px;
+            right: 12px;
+            z-index: 6;
+            width: 42px;
+            height: 42px;
+            padding: 0;
+            border: 1px solid rgba(74,53,84,0.22);
+            border-radius: 14px;
+            background:
+                radial-gradient(circle at 28% 20%, rgba(255,255,255,0.92), transparent 32%),
+                linear-gradient(135deg, rgba(255,255,255,0.96), rgba(210,180,255,0.94));
+            color: #4a3554;
+            font-family: 'Fredoka', sans-serif;
+            font-size: 23px;
+            font-weight: 800;
+            cursor: pointer;
+            box-shadow:
+                0 8px 18px rgba(74,53,84,0.2),
+                inset 0 1px 0 rgba(255,255,255,0.72);
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            transition: transform 0.2s ease, filter 0.2s ease, background 0.2s ease;
+        }
+
+        .whiteboard-fullscreen-btn:hover {
+            transform: scale(1.08);
+            filter: brightness(1.05);
+        }
+
+        .whiteboard-fullscreen-btn:active {
+            transform: scale(0.96);
+        }
+
+        .drawing-space-container.whiteboard-expanded {
+            position: absolute;
+            inset: 0;
+            z-index: 160;
+            width: 100%;
+            height: 100%;
+            min-height: 100%;
+            max-width: none;
+            animation: whiteboardExpand 0.32s cubic-bezier(0.175, 0.885, 0.32, 1.15);
+        }
+
+        .drawing-space-container.whiteboard-expanded .whiteboard-board {
+            border-radius: 24px;
+        }
+
+        .drawing-space-container.whiteboard-expanded .whiteboard-fullscreen-btn {
+            top: 15px;
+            right: 15px;
+        }
+
+        @keyframes whiteboardExpand {
+            from {
+                opacity: 0.55;
+                transform: scale(0.965);
+            }
+
+            to {
+                opacity: 1;
+                transform: scale(1);
+            }
+        }
+
+        /* A tilted surface makes a screen-space crosshair disagree with local canvas pixels.
+           Drawing mode rests the board flat so the painted pixel sits exactly on the pointer. */
+        body.paint-mode #app-wrapper {
+            transform: rotateX(0deg) rotateY(0deg) !important;
+        }
+
         #whiteboardCanvas {
             position: absolute;
             inset: 0;
@@ -2932,6 +3007,50 @@
         .paint-toolbar input[type="range"] {
             width: 100%;
             min-width: 0;
+        }
+
+        .paint-brush-picker {
+            flex-direction: column;
+            align-items: stretch;
+            gap: 7px;
+        }
+
+        .paint-brush-grid {
+            display: grid;
+            grid-template-columns: repeat(3, minmax(0, 1fr));
+            gap: 6px;
+        }
+
+        .paint-toolbar .paint-brush-btn {
+            min-width: 0;
+            padding: 8px 4px;
+            border-radius: 11px;
+            font-size: 11px;
+            letter-spacing: 0.1px;
+        }
+
+        .paint-toolbar .paint-brush-btn[data-brush="marker"] {
+            background: linear-gradient(135deg, #ffe89c, #f5a8ef);
+        }
+
+        .paint-toolbar .paint-brush-btn[data-brush="pencil"] {
+            background: linear-gradient(135deg, #dee5f5, #8e99bc);
+        }
+
+        .paint-toolbar .paint-brush-btn[data-brush="chalk"] {
+            background: linear-gradient(135deg, #f6f0ff, #c8abff);
+        }
+
+        .paint-toolbar .paint-brush-btn[data-brush="spray"] {
+            background: linear-gradient(135deg, #daefff, #82cdfc);
+        }
+
+        .paint-toolbar .paint-brush-btn.active {
+            color: #4a3554;
+            box-shadow:
+                inset 0 0 0 2px rgba(74, 53, 84, 0.48),
+                0 4px 9px rgba(74,53,84,0.18);
+            filter: saturate(1.1) brightness(1.04);
         }
 
         .paint-hint {
@@ -3170,6 +3289,17 @@
                                     <span class="paint-label">Size</span>
                                     <input id="paintSize" type="range" min="2" max="22" value="7" title="Paint size">
                                 </div>
+
+                                <div class="paint-control-row paint-brush-picker">
+                                    <span class="paint-label">Brush texture</span>
+                                    <div class="paint-brush-grid" role="group" aria-label="Brush texture">
+                                        <button type="button" class="paint-brush-btn active" data-brush="smooth" onclick="setPaintBrush('smooth')" title="Clean smooth line">Smooth</button>
+                                        <button type="button" class="paint-brush-btn" data-brush="marker" onclick="setPaintBrush('marker')" title="Translucent marker">Marker</button>
+                                        <button type="button" class="paint-brush-btn" data-brush="pencil" onclick="setPaintBrush('pencil')" title="Textured pencil">Pencil</button>
+                                        <button type="button" class="paint-brush-btn" data-brush="chalk" onclick="setPaintBrush('chalk')" title="Dusty chalk">Chalk</button>
+                                        <button type="button" class="paint-brush-btn" data-brush="spray" onclick="setPaintBrush('spray')" title="Spray paint">Spray</button>
+                                    </div>
+                                </div>
                             </div>
 
                             <div class="paint-hint">Turn Draw on, then use the whiteboard panel where the gallery used to be. Eraser removes strokes.</div>
@@ -3197,6 +3327,7 @@
             <div class="side-container box-style drawing-space-container">
                 <div class="header-style">Whiteboard</div>
                 <div class="whiteboard-board">
+                    <button id="whiteboardFullscreenBtn" class="whiteboard-fullscreen-btn" type="button" onclick="event.stopPropagation(); toggleWhiteboardFullscreen()" title="Expand whiteboard" aria-label="Expand whiteboard">⛶</button>
                     <canvas id="whiteboardCanvas" aria-label="Shared whiteboard drawing space"></canvas>
                 </div>
             </div>
@@ -3753,22 +3884,25 @@
         let currentDrawingStroke = null;
         let paintModeEnabled = false;
         let eraserModeEnabled = false;
+        let activePaintBrush = 'smooth';
+        let whiteboardExpanded = false;
         let drawingRenderRaf = null;
         const DRAWING_MAX_DEVICE_PIXEL_RATIO = 1.5;
+        const SUPPORTED_PAINT_BRUSHES = ['smooth', 'marker', 'pencil', 'chalk', 'spray'];
 
         const drawingCanvas = document.getElementById('whiteboardCanvas');
         const drawingCtx = drawingCanvas ? drawingCanvas.getContext('2d') : null;
 
         const getPaintColor = () => document.getElementById('paintColor')?.value || '#8a2be2';
         const getPaintSize = () => Number(document.getElementById('paintSize')?.value || 7);
+        const getPaintBrush = () => SUPPORTED_PAINT_BRUSHES.includes(activePaintBrush) ? activePaintBrush : 'smooth';
+        const clampDrawingUnit = (value) => Math.min(1, Math.max(0, Number.isFinite(value) ? value : 0));
 
-        const getDrawingCanvasSize = () => {
-            const rect = drawingCanvas?.getBoundingClientRect();
-            return {
-                width: Math.max(1, rect?.width || drawingCanvas?.clientWidth || 1),
-                height: Math.max(1, rect?.height || drawingCanvas?.clientHeight || 1)
-            };
-        };
+        const getDrawingCanvasSize = () => ({
+            /* clientWidth/clientHeight stay in the canvas coordinate plane even while the UI is tilted. */
+            width: Math.max(1, drawingCanvas?.clientWidth || drawingCanvas?.parentElement?.clientWidth || 1),
+            height: Math.max(1, drawingCanvas?.clientHeight || drawingCanvas?.parentElement?.clientHeight || 1)
+        });
 
         const resizeDrawingCanvas = () => {
             if (!drawingCanvas || !drawingCtx) return;
@@ -3781,32 +3915,127 @@
             renderSharedDrawing();
         };
 
+        const drawPolyline = (points, color, lineWidth, alpha) => {
+            if (!drawingCtx || points.length < 2) return;
+            drawingCtx.strokeStyle = color;
+            drawingCtx.lineWidth = Math.max(0.5, lineWidth);
+            drawingCtx.globalAlpha = alpha;
+            drawingCtx.beginPath();
+            points.forEach((point, index) => {
+                if (index === 0) drawingCtx.moveTo(point.x, point.y);
+                else drawingCtx.lineTo(point.x, point.y);
+            });
+            drawingCtx.stroke();
+        };
+
+        const createStrokeRandom = (stroke) => {
+            let seed = (Number(stroke.timestamp) || 1) >>> 0;
+            seed ^= String(stroke.color || '').split('').reduce((sum, char) => sum + char.charCodeAt(0), 0);
+            return () => {
+                seed = (seed * 1664525 + 1013904223) >>> 0;
+                return seed / 4294967296;
+            };
+        };
+
+        const samplePolyline = (points, spacing, callback) => {
+            let samples = 0;
+            for (let index = 1; index < points.length; index += 1) {
+                const from = points[index - 1];
+                const to = points[index];
+                const dx = to.x - from.x;
+                const dy = to.y - from.y;
+                const distance = Math.hypot(dx, dy);
+                const steps = Math.max(1, Math.ceil(distance / Math.max(1, spacing)));
+                for (let step = 0; step <= steps; step += 1) {
+                    if (samples > 2400) return;
+                    const progress = step / steps;
+                    callback(from.x + dx * progress, from.y + dy * progress);
+                    samples += 1;
+                }
+            }
+        };
+
         const drawStroke = (stroke) => {
             if (!drawingCtx || !stroke || !Array.isArray(stroke.points) || stroke.points.length < 2) return;
+
+            const { width, height } = getDrawingCanvasSize();
+            const points = stroke.points.map((point) => ({
+                x: clampDrawingUnit(Number(point.x)) * width,
+                y: clampDrawingUnit(Number(point.y)) * height
+            }));
+            const size = Math.max(1, Number(stroke.size || 7));
+            const color = stroke.color || '#8a2be2';
+            const brush = SUPPORTED_PAINT_BRUSHES.includes(stroke.brush) ? stroke.brush : 'smooth';
 
             drawingCtx.save();
             drawingCtx.lineCap = 'round';
             drawingCtx.lineJoin = 'round';
             drawingCtx.globalCompositeOperation = stroke.mode === 'erase' ? 'destination-out' : 'source-over';
-            drawingCtx.strokeStyle = stroke.mode === 'erase' ? 'rgba(0,0,0,1)' : (stroke.color || '#8a2be2');
-            drawingCtx.lineWidth = Number(stroke.size || 7) * (stroke.mode === 'erase' ? 2.4 : 1);
-            drawingCtx.globalAlpha = stroke.mode === 'erase' ? 1 : 0.92;
-            drawingCtx.beginPath();
 
-            const { width, height } = getDrawingCanvasSize();
+            if (stroke.mode === 'erase') {
+                drawPolyline(points, 'rgba(0,0,0,1)', size * 2.4, 1);
+                drawingCtx.restore();
+                return;
+            }
 
-            stroke.points.forEach((point, index) => {
-                const x = Number(point.x || 0) * width;
-                const y = Number(point.y || 0) * height;
-
-                if (index === 0) {
-                    drawingCtx.moveTo(x, y);
-                } else {
-                    drawingCtx.lineTo(x, y);
+            if (brush === 'marker') {
+                drawPolyline(points, color, size * 2.2, 0.12);
+                drawPolyline(points, color, size * 1.46, 0.48);
+            } else if (brush === 'pencil') {
+                const random = createStrokeRandom(stroke);
+                drawPolyline(points, color, Math.max(0.8, size * 0.58), 0.68);
+                for (let pass = 0; pass < 3; pass += 1) {
+                    const jittered = points.map((point) => ({
+                        x: point.x + (random() - 0.5) * size * 0.34,
+                        y: point.y + (random() - 0.5) * size * 0.34
+                    }));
+                    drawPolyline(jittered, color, Math.max(0.55, size * 0.22), 0.16);
                 }
-            });
+            } else if (brush === 'chalk') {
+                const random = createStrokeRandom(stroke);
+                drawPolyline(points, color, size * 0.84, 0.2);
+                drawingCtx.fillStyle = color;
+                samplePolyline(points, Math.max(1.4, size * 0.42), (x, y) => {
+                    const specks = Math.min(9, 3 + Math.ceil(size / 3));
+                    for (let speck = 0; speck < specks; speck += 1) {
+                        const angle = random() * Math.PI * 2;
+                        const radius = random() * size * 0.64;
+                        drawingCtx.globalAlpha = 0.07 + random() * 0.26;
+                        drawingCtx.beginPath();
+                        drawingCtx.arc(
+                            x + Math.cos(angle) * radius,
+                            y + Math.sin(angle) * radius,
+                            0.35 + random() * Math.min(1.35, size * 0.16),
+                            0,
+                            Math.PI * 2
+                        );
+                        drawingCtx.fill();
+                    }
+                });
+            } else if (brush === 'spray') {
+                const random = createStrokeRandom(stroke);
+                drawingCtx.fillStyle = color;
+                samplePolyline(points, Math.max(1.6, size * 0.62), (x, y) => {
+                    const dots = Math.min(18, 5 + Math.ceil(size * 0.62));
+                    for (let dot = 0; dot < dots; dot += 1) {
+                        const angle = random() * Math.PI * 2;
+                        const radius = Math.sqrt(random()) * size * 1.55;
+                        drawingCtx.globalAlpha = 0.15 + random() * 0.38;
+                        drawingCtx.beginPath();
+                        drawingCtx.arc(
+                            x + Math.cos(angle) * radius,
+                            y + Math.sin(angle) * radius,
+                            0.45 + random() * Math.min(1.45, size * 0.13),
+                            0,
+                            Math.PI * 2
+                        );
+                        drawingCtx.fill();
+                    }
+                });
+            } else {
+                drawPolyline(points, color, size, 0.92);
+            }
 
-            drawingCtx.stroke();
             drawingCtx.restore();
         };
 
@@ -3824,10 +4053,21 @@
         }
 
         const eventToDrawingPoint = (event) => {
+            const { width, height } = getDrawingCanvasSize();
+
+            /* Pointer offsets are in the canvas local plane. Unlike a bounding rect,
+               they do not shift when an ancestor carries the 3D tilt transform. */
+            if (event.target === drawingCanvas && Number.isFinite(event.offsetX) && Number.isFinite(event.offsetY)) {
+                return {
+                    x: clampDrawingUnit(event.offsetX / width),
+                    y: clampDrawingUnit(event.offsetY / height)
+                };
+            }
+
             const rect = drawingCanvas.getBoundingClientRect();
             return {
-                x: Math.min(1, Math.max(0, (event.clientX - rect.left) / Math.max(1, rect.width))),
-                y: Math.min(1, Math.max(0, (event.clientY - rect.top) / Math.max(1, rect.height)))
+                x: clampDrawingUnit((event.clientX - rect.left) / Math.max(1, rect.width)),
+                y: clampDrawingUnit((event.clientY - rect.top) / Math.max(1, rect.height))
             };
         };
 
@@ -3848,6 +4088,44 @@
             if (btn) btn.innerText = paintModeEnabled ? '✏️ Drawing' : '✏️ Draw';
             resizeDrawingCanvas();
         };
+
+        window.setPaintBrush = (brush) => {
+            activePaintBrush = SUPPORTED_PAINT_BRUSHES.includes(brush) ? brush : 'smooth';
+            document.querySelectorAll('.paint-brush-btn').forEach((button) => {
+                button.classList.toggle('active', button.dataset.brush === activePaintBrush);
+            });
+
+            if (eraserModeEnabled) {
+                eraserModeEnabled = false;
+                document.getElementById('paintEraserBtn')?.classList.remove('active');
+            }
+
+            if (!paintModeEnabled) window.togglePaintMode();
+        };
+
+        window.toggleWhiteboardFullscreen = () => {
+            const whiteboard = document.querySelector('.drawing-space-container');
+            const button = document.getElementById('whiteboardFullscreenBtn');
+            if (!whiteboard) return;
+
+            whiteboardExpanded = !whiteboardExpanded;
+            whiteboard.classList.toggle('whiteboard-expanded', whiteboardExpanded);
+
+            if (button) {
+                button.innerText = whiteboardExpanded ? '↙' : '⛶';
+                button.title = whiteboardExpanded ? 'Restore whiteboard' : 'Expand whiteboard';
+                button.setAttribute('aria-label', button.title);
+            }
+
+            requestAnimationFrame(resizeDrawingCanvas);
+            setTimeout(resizeDrawingCanvas, 330);
+        };
+
+        window.addEventListener('keydown', (event) => {
+            if (event.key === 'Escape' && whiteboardExpanded) {
+                window.toggleWhiteboardFullscreen();
+            }
+        });
 
         window.toggleEraserMode = () => {
             eraserModeEnabled = !eraserModeEnabled;
@@ -3883,6 +4161,7 @@
                     mode: eraserModeEnabled ? 'erase' : 'draw',
                     color: eraserModeEnabled ? '#000000' : getPaintColor(),
                     size: getPaintSize(),
+                    brush: eraserModeEnabled ? 'smooth' : getPaintBrush(),
                     user: currentUser,
                     timestamp: Date.now(),
                     points: [eventToDrawingPoint(event)]
@@ -5395,6 +5674,11 @@
         const wrapper = document.getElementById('app-wrapper');
 
         window.addEventListener('mousemove', (e) => {
+            if (paintModeEnabled) {
+                wrapper.style.transform = 'rotateY(0deg) rotateX(0deg)';
+                wrapper.style.boxShadow = '0px 20px 50px rgba(0,0,0,0.48)';
+                return;
+            }
 
             const centerX = window.innerWidth / 2;
             const centerY = window.innerHeight / 2;
