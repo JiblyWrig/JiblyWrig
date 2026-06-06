@@ -3433,10 +3433,57 @@
             }
         }
 
-    </style>
+    
+#passwordOverlay {
+    position: fixed;
+    inset: 0;
+    z-index: 999999;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    background:
+        radial-gradient(circle at top left, rgba(190,160,230,0.25), transparent 40%),
+        radial-gradient(circle at bottom right, rgba(138,43,226,0.25), transparent 40%),
+        rgba(15,15,20,0.98);
+    backdrop-filter: blur(20px);
+}
+.password-card {
+    width: 380px;
+    max-width: 90vw;
+    padding: 35px;
+    text-align: center;
+    border-radius: 30px;
+    background: linear-gradient(135deg, rgba(255,255,255,0.18), rgba(255,255,255,0.08));
+    border: 2px solid rgba(255,255,255,0.15);
+    box-shadow: 0 25px 60px rgba(0,0,0,0.5), 0 0 40px rgba(138,43,226,0.2);
+    animation: passwordFloat 4s ease-in-out infinite;
+}
+.password-card h1 { color:white; font-family:'Dancing Script',cursive; font-size:3rem; margin-bottom:10px; }
+.password-subtitle { color:rgba(255,255,255,0.8); margin-bottom:25px; font-size:15px; }
+#passwordInput { width:100%; box-sizing:border-box; padding:14px 18px; border:none; outline:none; border-radius:999px; font-family:'Fredoka',sans-serif; font-size:15px; margin-bottom:15px; }
+#passwordButton { width:100%; padding:14px; border:none; border-radius:999px; cursor:pointer; font-family:'Fredoka',sans-serif; font-weight:700; color:white; background:linear-gradient(135deg,#c48cff,#8a2be2); transition:.25s; }
+#passwordButton:hover { transform:translateY(-2px); filter:brightness(1.1); }
+#passwordError { display:none; color:#ff7d7d; font-size:13px; margin-top:12px; }
+.password-hint { margin-top:18px; color:rgba(255,255,255,0.55); font-size:12px; letter-spacing:.5px; }
+@keyframes passwordFloat { 0%,100%{transform:translateY(0)} 50%{transform:translateY(-8px)} }
+
+</style>
 </head>
 
 <body>
+
+<div id="passwordOverlay">
+    <div class="password-card">
+        <h1>♡ Welcome ♡</h1>
+        <p class="password-subtitle">Enter Password</p>
+        <input type="password" id="passwordInput" placeholder="Password" autocomplete="off">
+        <button id="passwordButton">Enter</button>
+        <p id="passwordError">Incorrect password</p>
+        <div class="password-hint">Check your email for password</div>
+    </div>
+</div>
+<div id="siteContent" style="display:none;">
+
 
     <div id="selfieModal" class="selfie-modal" onclick="closeSelfieCamera()">
         <div class="selfie-modal-card" onclick="event.stopPropagation()">
@@ -6433,5 +6480,24 @@
             wrapper.style.boxShadow = `${-x}px ${y + 20}px 50px rgba(0,0,0,0.48)`;
         });
     </script>
+</div>
+
+<script>
+const SITE_PASSWORD = "17368";
+function unlockSite(){
+  const entered=document.getElementById("passwordInput").value;
+  if(entered===SITE_PASSWORD){
+    document.getElementById("passwordOverlay").style.display="none";
+    document.getElementById("siteContent").style.display="block";
+  }else{
+    document.getElementById("passwordError").style.display="block";
+  }
+}
+document.getElementById("passwordButton").addEventListener("click",unlockSite);
+document.getElementById("passwordInput").addEventListener("keydown",e=>{
+  if(e.key==="Enter") unlockSite();
+});
+</script>
+
 </body>
 </html>
