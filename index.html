@@ -79,7 +79,7 @@
             position: relative;
             order: 1;
             z-index: 1;
-            transition: transform 0.1s ease-out, box-shadow 0.3s ease;
+            transition: transform 0.2s cubic-bezier(0.16, 1, 0.3, 1), box-shadow 0.3s ease;
             transform-style: preserve-3d;
             border-radius: 25px;
             box-shadow: 0 20px 50px rgba(0,0,0,0.48);
@@ -393,7 +393,7 @@
         }
 
         .app-close-btn:hover {
-            transform: scale(1.12);
+            transform: scale(1.12) rotate(90deg);
             background: rgba(255,255,255,0.85);
         }
 
@@ -467,12 +467,18 @@
             height: 42px;
             cursor: pointer;
             font-size: 16px;
-            transition: transform 0.2s, background 0.2s;
+            transition: transform 0.2s, background 0.2s, box-shadow 0.2s;
+            box-shadow: 0 4px 10px rgba(138, 43, 226, 0.4);
         }
 
         #playPauseBtn:hover {
             transform: scale(1.1);
             filter: brightness(1.1);
+            box-shadow: 0 6px 15px rgba(138, 43, 226, 0.5);
+        }
+
+        #playPauseBtn:active {
+            transform: scale(0.95);
         }
 
         .volume-control {
@@ -547,11 +553,12 @@
             font-weight: bold;
             width: 24px;
             height: 24px;
-            transition: transform 0.2s;
+            transition: transform 0.2s, background 0.2s;
         }
 
         .calendar-header button:hover {
             transform: scale(1.18);
+            background: rgba(255,255,255,0.75);
         }
 
         .calendar-days {
@@ -711,7 +718,7 @@
         }
 
         .calendar-event-delete:hover {
-            transform: scale(1.14);
+            transform: scale(1.14) rotate(10deg);
             filter: brightness(1.08);
         }
 
@@ -751,6 +758,11 @@
             transform: scale(1.06);
             filter: brightness(1.12);
         }
+
+        .calendar-event-form button:active {
+            transform: scale(0.96);
+        }
+
         .side-container {
             width: clamp(240px, 21vw, 300px);
             height: min(720px, calc(100vh - 92px));
@@ -808,11 +820,12 @@
             cursor: pointer;
             border: 1px solid #000;
             box-sizing: border-box;
-            transition: transform 0.2s;
+            transition: transform 0.2s ease, box-shadow 0.2s ease;
         }
 
         .gallery-item:hover {
-            transform: scale(1.03);
+            transform: scale(1.05) rotate(-1deg);
+            box-shadow: 0 8px 16px rgba(0,0,0,0.2);
         }
 
         .gallery-item img {
@@ -882,7 +895,7 @@
         }
 
         .close-lightbox:hover {
-            transform: scale(1.14) rotate(6deg);
+            transform: scale(1.14) rotate(90deg);
         }
 
         .lightbox-delete-btn {
@@ -1151,6 +1164,13 @@
             font-size: 14px;
             word-break: break-word;
             animation: fadeIn 0.3s ease;
+            transition: transform 0.2s ease, box-shadow 0.2s ease, background 0.2s ease;
+        }
+
+        .bucket-item:hover {
+            transform: translateY(-2px);
+            background: rgba(255, 255, 255, 0.55);
+            box-shadow: 0 5px 12px rgba(74,53,84,0.12);
         }
 
         .bucket-item.deleting {
@@ -1305,6 +1325,12 @@
             font-size: 11px;
             cursor: pointer;
             text-decoration: underline;
+            transition: color 0.2s, transform 0.2s;
+        }
+
+        .btn-reset:hover {
+            color: #8a2be2;
+            transform: translateY(-1px);
         }
 
         .color-toggle {
@@ -1455,11 +1481,12 @@
             color: #666;
             font-weight: bold;
             font-size: 14px;
-            transition: color 0.2s;
+            transition: color 0.2s, transform 0.2s;
         }
 
         .unpin-btn:hover {
             color: #ff4d4d;
+            transform: scale(1.2);
         }
 
         .messages {
@@ -1558,7 +1585,7 @@
             word-wrap: break-word;
             cursor: pointer;
             white-space: pre-wrap;
-            transition: background-color 0.2s;
+            transition: background-color 0.2s, transform 0.2s ease, box-shadow 0.2s ease;
         }
 
         .bubble-mine {
@@ -1571,6 +1598,11 @@
             background-color: #ffffff;
             color: #333;
             border-bottom-left-radius: 4px;
+        }
+
+        .bubble:hover {
+            transform: translateY(-1px);
+            box-shadow: 0 4px 12px rgba(0,0,0,0.1);
         }
 
         .bubble.sticker-bubble {
@@ -1942,6 +1974,7 @@
             font-weight: bold;
             cursor: pointer;
             z-index: 10;
+            animation: fadeIn 0.2s ease;
         }
 
         .reply-bar {
@@ -1952,6 +1985,14 @@
             margin-bottom: 5px;
             display: none;
             position: relative;
+            opacity: 0;
+            transform: translateY(5px);
+            transition: opacity 0.2s ease, transform 0.2s ease;
+        }
+
+        .reply-bar.active {
+            opacity: 1;
+            transform: translateY(0);
         }
 
         .typing-indicator {
@@ -2025,6 +2066,11 @@
             outline: none;
             font-family: 'Fredoka', sans-serif;
             box-sizing: border-box;
+            transition: box-shadow 0.2s ease;
+        }
+
+        .input-wrapper input:focus {
+            box-shadow: 0 0 0 3px rgba(138, 43, 226, 0.2);
         }
 
         .clear-btn {
@@ -2047,6 +2093,7 @@
 
         .clear-btn:hover {
             background: #ff4d4d;
+            transform: rotate(90deg);
         }
 
         .chat-inputs button {
@@ -2064,7 +2111,7 @@
             align-items: center;
             justify-content: center;
             line-height: 1;
-            transition: transform 0.2s, filter 0.2s;
+            transition: transform 0.2s, filter 0.2s, box-shadow 0.2s;
         }
 
         .chat-inputs button.emoji-toggle {
@@ -2129,6 +2176,7 @@
 
         .chat-inputs button:active {
             transform: scale(0.95);
+            box-shadow: 0 2px 6px rgba(138, 43, 226, 0.5);
         }
 
         body.dark-mode {
@@ -2364,8 +2412,6 @@
             opacity: 0.74;
         }
 
-
-        /* --- Smooth UI upgrade: floating mini-apps, cursor glow, online state, and buttery chat motion --- */
         :root {
             --ui-fast: 0.16s;
             --ui-normal: 0.24s;
@@ -2794,8 +2840,6 @@
             will-change: transform, opacity, filter;
         }
 
-
-        /* --- Selfie camera + shared whiteboard paint layer --- */
         .drawing-space-container {
             gap: 10px;
         }
@@ -2875,7 +2919,7 @@
             font-size: 12px;
             font-weight: 800;
             cursor: pointer;
-            transition: transform 0.18s ease, background 0.18s ease, box-shadow 0.18s ease;
+            transition: transform 0.18s ease, background 0.18s ease, box-shadow 0.18s ease, color 0.18s ease;
         }
 
         .whiteboard-tab:hover {
@@ -2887,6 +2931,7 @@
             color: white;
             background: linear-gradient(135deg, #b19cd9, #8a2be2);
             box-shadow: 0 4px 9px rgba(74,53,84,0.22);
+            transform: scale(1.05);
         }
 
         .whiteboard-save-badge {
@@ -3123,8 +3168,6 @@
             }
         }
 
-        /* A tilted surface makes a screen-space crosshair disagree with local canvas pixels.
-           Drawing mode rests the board flat so the painted pixel sits exactly on the pointer. */
         body.paint-mode #app-wrapper {
             transform: rotateX(0deg) rotateY(0deg) !important;
         }
@@ -3233,6 +3276,11 @@
         .selfie-modal-card button:hover {
             transform: scale(1.06);
             filter: brightness(1.1);
+        }
+
+        .paint-toolbar button:active,
+        .selfie-modal-card button:active {
+            transform: scale(0.96);
         }
 
         .paint-toolbar button:disabled {
@@ -3350,6 +3398,7 @@
 
         .selfie-modal.open {
             display: flex;
+            animation: fadeIn 0.2s ease;
         }
 
         .selfie-modal-card {
@@ -3412,7 +3461,6 @@
             color: #4a3554;
         }
 
-        /* Open mini-app panels stay solid even when the main card transparency slider changes. */
         .app-panel,
         .app-panel::before {
             background-color: rgb(var(--box-base-rgb)) !important;
@@ -3433,43 +3481,63 @@
             }
         }
 
-    
-#passwordOverlay {
-    position: fixed;
-    inset: 0;
-    z-index: 999999;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    background:
-        radial-gradient(circle at top left, rgba(190,160,230,0.25), transparent 40%),
-        radial-gradient(circle at bottom right, rgba(138,43,226,0.25), transparent 40%),
-        rgba(15,15,20,0.98);
-    backdrop-filter: blur(20px);
-}
-.password-card {
-    width: 380px;
-    max-width: 90vw;
-    padding: 35px;
-    text-align: center;
-    border-radius: 30px;
-    background: linear-gradient(135deg, rgba(255,255,255,0.18), rgba(255,255,255,0.08));
-    border: 2px solid rgba(255,255,255,0.15);
-    box-shadow: 0 25px 60px rgba(0,0,0,0.5), 0 0 40px rgba(138,43,226,0.2);
-    animation: passwordFloat 4s ease-in-out infinite;
-}
-.password-card h1 { color:white; font-family:'Dancing Script',cursive; font-size:3rem; margin-bottom:10px; }
-.password-subtitle { color:rgba(255,255,255,0.8); margin-bottom:25px; font-size:15px; }
-#passwordInput { width:100%; box-sizing:border-box; padding:14px 18px; border:none; outline:none; border-radius:999px; font-family:'Fredoka',sans-serif; font-size:15px; margin-bottom:15px; }
-#passwordButton { width:100%; padding:14px; border:none; border-radius:999px; cursor:pointer; font-family:'Fredoka',sans-serif; font-weight:700; color:white; background:linear-gradient(135deg,#c48cff,#8a2be2); transition:.25s; }
-#passwordButton:hover { transform:translateY(-2px); filter:brightness(1.1); }
-#passwordError { display:none; color:#ff7d7d; font-size:13px; margin-top:12px; }
-.password-hint { margin-top:18px; color:rgba(255,255,255,0.55); font-size:12px; letter-spacing:.5px; }
-@keyframes passwordFloat { 0%,100%{transform:translateY(0)} 50%{transform:translateY(-8px)} }
+        #passwordOverlay {
+            position: fixed;
+            inset: 0;
+            z-index: 999999;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            background:
+                radial-gradient(circle at top left, rgba(190,160,230,0.25), transparent 40%),
+                radial-gradient(circle at bottom right, rgba(138,43,226,0.25), transparent 40%),
+                rgba(15,15,20,0.98);
+            backdrop-filter: blur(20px);
+            opacity: 1;
+            visibility: visible;
+            transition: opacity 0.5s ease, visibility 0.5s ease;
+        }
 
-</style>
+        #passwordOverlay.hidden-unlock {
+            opacity: 0;
+            visibility: hidden;
+            pointer-events: none;
+        }
+
+        .password-card {
+            width: 380px;
+            max-width: 90vw;
+            padding: 35px;
+            text-align: center;
+            border-radius: 30px;
+            background: linear-gradient(135deg, rgba(255,255,255,0.18), rgba(255,255,255,0.08));
+            border: 2px solid rgba(255,255,255,0.15);
+            box-shadow: 0 25px 60px rgba(0,0,0,0.5), 0 0 40px rgba(138,43,226,0.2);
+            animation: passwordFloat 4s ease-in-out infinite;
+        }
+
+        .password-card h1 { color:white; font-family:'Dancing Script',cursive; font-size:3rem; margin-bottom:10px; }
+        .password-subtitle { color:rgba(255,255,255,0.8); margin-bottom:25px; font-size:15px; }
+        #passwordInput { width:100%; box-sizing:border-box; padding:14px 18px; border:none; outline:none; border-radius:999px; font-family:'Fredoka',sans-serif; font-size:15px; margin-bottom:15px; text-align:center; letter-spacing:2px; transition: box-shadow 0.2s ease; }
+        #passwordInput:focus { box-shadow: 0 0 0 3px rgba(138, 43, 226, 0.4); }
+        #passwordButton { width:100%; padding:14px; border:none; border-radius:999px; cursor:pointer; font-family:'Fredoka',sans-serif; font-weight:700; color:white; background:linear-gradient(135deg,#c48cff,#8a2be2); transition:.25s; box-shadow: 0 8px 20px rgba(138, 43, 226, 0.4); }
+        #passwordButton:hover { transform:translateY(-2px); filter:brightness(1.1); box-shadow: 0 12px 28px rgba(138, 43, 226, 0.5); }
+        #passwordButton:active { transform: translateY(1px) scale(0.98); }
+        #passwordError { display:none; color:#ff7d7d; font-size:13px; margin-top:12px; animation: shake 0.4s ease; }
+        .password-hint { margin-top:18px; color:rgba(255,255,255,0.55); font-size:12px; letter-spacing:.5px; }
+        @keyframes passwordFloat { 0%,100%{transform:translateY(0)} 50%{transform:translateY(-8px)} }
+        @keyframes shake { 0%, 100% { transform: translateX(0); } 20%, 60% { transform: translateX(-8px); } 40%, 80% { transform: translateX(8px); } }
+
+        #siteContent {
+            opacity: 0;
+            transition: opacity 0.6s ease 0.2s;
+        }
+
+        #siteContent.visible {
+            opacity: 1;
+        }
+    </style>
 </head>
-
 <body>
 
 <div id="passwordOverlay">
@@ -3483,7 +3551,6 @@
     </div>
 </div>
 <div id="siteContent" style="display:none;">
-
 
     <div id="selfieModal" class="selfie-modal" onclick="closeSelfieCamera()">
         <div class="selfie-modal-card" onclick="event.stopPropagation()">
@@ -3578,7 +3645,6 @@
                             </div>
 
                             <div class="calendar-dates" id="calendarDates"></div>
-
 
                             <div class="calendar-event-panel" onclick="event.stopPropagation()">
                                 <div id="selectedDateTitle" class="selected-date-title">Select a day</div>
@@ -4210,8 +4276,6 @@
         const bucketListRef = ref(db, "bucketlist");
         const pinnedRef = ref(db, "pinned");
         const calendarEventsRef = ref(db, "calendarEvents");
-        /* Board 1 continues using the original path so existing drawings remain visible.
-           Boards 2-10, notes, live previews and cursor presence are added alongside it. */
         const whiteboardLegacyStrokesRef = ref(db, "whiteboardDrawing/strokes");
         const whiteboardBoardsRef = ref(db, "whiteboardDrawing/boards");
         const whiteboardPresenceRootRef = ref(db, "whiteboardDrawing/presence");
@@ -4267,9 +4331,6 @@
 
         const drawingCanvas = document.getElementById('whiteboardCanvas');
         const drawingCtx = drawingCanvas ? drawingCanvas.getContext('2d') : null;
-        /* Saved strokes are cached offscreen. While a stroke is in progress, only that
-           lightweight preview is composited over the cache instead of replaying every
-           textured stroke on every pointer event. */
         const savedDrawingCanvas = document.createElement('canvas');
         const savedDrawingCtx = savedDrawingCanvas.getContext('2d');
         const eraserRadiusCursor = document.getElementById('eraserRadiusCursor');
@@ -4388,8 +4449,6 @@
             context.lineJoin = 'round';
             context.globalCompositeOperation = stroke.mode === 'erase' ? 'destination-out' : 'source-over';
 
-            /* A click/tap is a real mark too. Previously single-point strokes were invisible,
-               which made the board appear broken whenever movement sampling was minimal. */
             if (points.length === 1) {
                 context.fillStyle = stroke.mode === 'erase' ? 'rgba(0,0,0,1)' : color;
                 context.globalAlpha = stroke.mode === 'erase' ? 1 : (brush === 'marker' ? 0.46 : 0.92);
@@ -4486,8 +4545,6 @@
             const clientX = Number(event.clientX);
             const clientY = Number(event.clientY);
 
-            /* Use viewport coordinates consistently. offsetX/offsetY can become stale or jump
-               after pointer capture and while the tilted container is being flattened. */
             if (!Number.isFinite(clientX) || !Number.isFinite(clientY)) {
                 return lastDrawingPointerPoint || { x: 0, y: 0 };
             }
@@ -5103,7 +5160,6 @@
         };
 
         const renderOnlineIndicator = () => {
-            /* Online presence still powers message read ticks. The visible header status now reports drawing activity. */
             renderDrawingIndicator(remoteDrawingPresence);
         };
 
@@ -5412,7 +5468,6 @@
             });
         };
 
-
         const animateOutgoingTextMessage = (text) => new Promise((resolve) => {
             const input = document.getElementById("messageInput");
             const messagesDiv = document.getElementById("messages");
@@ -5668,11 +5723,15 @@
             bar.appendChild(label);
             bar.appendChild(preview);
             bar.appendChild(close);
+            
+            requestAnimationFrame(() => bar.classList.add('active'));
         };
 
         window.cancelReply = () => {
             replyingTo = null;
-            document.getElementById('replyBar').style.display = 'none';
+            const bar = document.getElementById('replyBar');
+            bar.classList.remove('active');
+            setTimeout(() => { if(!replyingTo) bar.style.display = 'none'; }, 200);
         };
 
         window.pinMessage = (msgData) => {
@@ -5749,8 +5808,8 @@
 
         window.endHold = () => clearTimeout(holdTimer);
 
-        const MAX_VIDEO_UPLOAD_BYTES = 25 * 1024 * 1024; // 25 MB. Videos are stored as data URLs in Realtime Database, so keep clips short.
-        const MAX_FILE_UPLOAD_BYTES = 25 * 1024 * 1024; // 25 MB. ZIPs and other files are also stored as data URLs so the other person can download them.
+        const MAX_VIDEO_UPLOAD_BYTES = 25 * 1024 * 1024; // 25 MB
+        const MAX_FILE_UPLOAD_BYTES = 25 * 1024 * 1024; // 25 MB
 
         const formatFileSize = (bytes = 0) => {
             if (!Number.isFinite(bytes) || bytes <= 0) return 'Unknown size';
@@ -6022,7 +6081,6 @@
             sendImageFileToChat(file);
             e.target.value = '';
         };
-
 
         window.handleImageUpload = window.handleMediaUpload;
 
@@ -6486,11 +6544,29 @@
 const SITE_PASSWORD = "17368";
 function unlockSite(){
   const entered=document.getElementById("passwordInput").value;
+  const overlay = document.getElementById("passwordOverlay");
+  const content = document.getElementById("siteContent");
+  const error = document.getElementById("passwordError");
+  const card = document.querySelector('.password-card');
+
   if(entered===SITE_PASSWORD){
-    document.getElementById("passwordOverlay").style.display="none";
-    document.getElementById("siteContent").style.display="block";
+    overlay.classList.add("hidden-unlock");
+    content.style.display = "block";
+    requestAnimationFrame(() => {
+        content.classList.add("visible");
+    });
+    setTimeout(() => {
+        overlay.style.display = "none";
+    }, 500);
   }else{
-    document.getElementById("passwordError").style.display="block";
+    error.style.display="block";
+    card.style.animation = 'none';
+    requestAnimationFrame(() => {
+        card.style.animation = 'shake 0.4s ease';
+    });
+    setTimeout(() => { 
+        card.style.animation = 'passwordFloat 4s ease-in-out infinite'; 
+    }, 400);
   }
 }
 document.getElementById("passwordButton").addEventListener("click",unlockSite);
