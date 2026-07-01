@@ -66,13 +66,8 @@
         }
 
         @keyframes moveBackground {
-            from {
-                background-position: 0 0;
-            }
-
-            to {
-                background-position: 1000px 1000px;
-            }
+            from { background-position: 0 0; }
+            to { background-position: 1000px 1000px; }
         }
 
         #app-wrapper {
@@ -140,6 +135,13 @@
         .mini-app:hover {
             transform: translateY(-3px) scale(1.03);
             box-shadow: 4px 4px 0px 0px #4a3554;
+        }
+
+        /* Prevent hover jitter when the app panel is open so buttons inside remain clickable */
+        .mini-app.active:hover {
+            transform: none !important;
+            box-shadow: none !important;
+            filter: none !important;
         }
 
         .mini-app.active {
@@ -311,7 +313,6 @@
                 0 5px 12px rgba(74,53,84,0.24);
             transform: rotate(-10deg) translateY(-1px);
         }
-
 
         #galleryApp .app-icon {
             background:
@@ -594,14 +595,8 @@
             transition: background 0.2s, transform 0.2s, border-color 0.2s;
         }
 
-        .calendar-date.current-month {
-            color: #333;
-        }
-
-        .calendar-date.other-month {
-            color: #999;
-            opacity: 0.6;
-        }
+        .calendar-date.current-month { color: #333; }
+        .calendar-date.other-month { color: #999; opacity: 0.6; }
 
         .calendar-date.today {
             background: #8a2be2;
@@ -630,9 +625,7 @@
                 inset 0 1px 0 rgba(255,255,255,0.45);
         }
 
-        .calendar-date.has-events::after {
-            display: none;
-        }
+        .calendar-date.has-events::after { display: none; }
 
         .calendar-date.today.has-events {
             background: var(--calendar-event-color, #8a2be2);
@@ -699,10 +692,7 @@
             animation: fadeIn 0.25s ease;
         }
 
-        .calendar-event-text {
-            flex: 1;
-            word-break: break-word;
-        }
+        .calendar-event-text { flex: 1; word-break: break-word; }
 
         .calendar-event-delete {
             width: 21px;
@@ -759,9 +749,7 @@
             filter: brightness(1.12);
         }
 
-        .calendar-event-form button:active {
-            transform: scale(0.96);
-        }
+        .calendar-event-form button:active { transform: scale(0.96); }
 
         .side-container {
             width: clamp(240px, 21vw, 300px);
@@ -851,9 +839,7 @@
             transition: transform 0.2s;
         }
 
-        .delete-btn:hover {
-            transform: scale(1.2);
-        }
+        .delete-btn:hover { transform: scale(1.2); }
 
         .lightbox-overlay {
             display: none;
@@ -894,9 +880,7 @@
             transition: transform 0.2s ease;
         }
 
-        .close-lightbox:hover {
-            transform: scale(1.14) rotate(90deg);
-        }
+        .close-lightbox:hover { transform: scale(1.14) rotate(90deg); }
 
         .lightbox-delete-btn {
             position: absolute;
@@ -982,44 +966,18 @@
             text-shadow: 0 2px 6px rgba(0,0,0,0.42);
         }
 
-        .lightbox-img.opening {
-            animation: imageExpand 0.42s cubic-bezier(0.175, 0.885, 0.32, 1.275);
-        }
-
-        .lightbox-img.switching {
-            animation: imageSwitch 0.25s ease;
-        }
+        .lightbox-img.opening { animation: imageExpand 0.42s cubic-bezier(0.175, 0.885, 0.32, 1.275); }
+        .lightbox-img.switching { animation: imageSwitch 0.25s ease; }
 
         @keyframes imageExpand {
-            0% {
-                opacity: 0;
-                transform: translateY(22px) scale(0.72) rotate(-1deg);
-                filter: blur(8px);
-            }
-
-            60% {
-                opacity: 1;
-                transform: translateY(-4px) scale(1.03);
-                filter: blur(0);
-            }
-
-            100% {
-                opacity: 1;
-                transform: translateY(0) scale(1) rotate(0);
-                filter: blur(0);
-            }
+            0% { opacity: 0; transform: translateY(22px) scale(0.72) rotate(-1deg); filter: blur(8px); }
+            60% { opacity: 1; transform: translateY(-4px) scale(1.03); filter: blur(0); }
+            100% { opacity: 1; transform: translateY(0) scale(1) rotate(0); filter: blur(0); }
         }
 
         @keyframes imageSwitch {
-            0% {
-                opacity: 0.25;
-                transform: scale(0.96);
-            }
-
-            100% {
-                opacity: 1;
-                transform: scale(1);
-            }
+            0% { opacity: 0.25; transform: scale(0.96); }
+            100% { opacity: 1; transform: scale(1); }
         }
 
         .image-counter {
@@ -1090,56 +1048,25 @@
                 inset 0 1px 0 rgba(255,255,255,0.65);
         }
 
-        .lightbox-nav:active {
-            transform: translateY(-50%) scale(0.94);
-        }
+        .lightbox-nav:active { transform: translateY(-50%) scale(0.94); }
 
-        .prev {
-            left: 34px;
-        }
+        .prev { left: 34px; }
+        .next { right: 34px; }
 
-        .next {
-            right: 34px;
-        }
+        .prev:hover { transform: translateY(-50%) translateX(-5px) scale(1.1); }
+        .next:hover { transform: translateY(-50%) translateX(5px) scale(1.1); }
 
-        .prev:hover {
-            transform: translateY(-50%) translateX(-5px) scale(1.1);
-        }
-
-        .next:hover {
-            transform: translateY(-50%) translateX(5px) scale(1.1);
-        }
-
-        .lightbox-overlay.active .prev {
-            animation: arrowSlideInLeft 0.38s ease both;
-        }
-
-        .lightbox-overlay.active .next {
-            animation: arrowSlideInRight 0.38s ease both;
-        }
+        .lightbox-overlay.active .prev { animation: arrowSlideInLeft 0.38s ease both; }
+        .lightbox-overlay.active .next { animation: arrowSlideInRight 0.38s ease both; }
 
         @keyframes arrowSlideInLeft {
-            from {
-                opacity: 0;
-                transform: translateY(-50%) translateX(-18px) scale(0.85);
-            }
-
-            to {
-                opacity: 1;
-                transform: translateY(-50%) translateX(0) scale(1);
-            }
+            from { opacity: 0; transform: translateY(-50%) translateX(-18px) scale(0.85); }
+            to { opacity: 1; transform: translateY(-50%) translateX(0) scale(1); }
         }
 
         @keyframes arrowSlideInRight {
-            from {
-                opacity: 0;
-                transform: translateY(-50%) translateX(18px) scale(0.85);
-            }
-
-            to {
-                opacity: 1;
-                transform: translateY(-50%) translateX(0) scale(1);
-            }
+            from { opacity: 0; transform: translateY(-50%) translateX(18px) scale(0.85); }
+            to { opacity: 1; transform: translateY(-50%) translateX(0) scale(1); }
         }
 
         .bucket-list {
@@ -1173,27 +1100,15 @@
             box-shadow: 0 5px 12px rgba(74,53,84,0.12);
         }
 
-        .bucket-item.deleting {
-            animation: fadeOut 0.3s forwards;
-        }
+        .bucket-item.deleting { animation: fadeOut 0.3s forwards; }
 
         @keyframes fadeIn {
-            from {
-                opacity: 0;
-                transform: translateY(5px);
-            }
-
-            to {
-                opacity: 1;
-                transform: translateY(0);
-            }
+            from { opacity: 0; transform: translateY(5px); }
+            to { opacity: 1; transform: translateY(0); }
         }
 
         @keyframes fadeOut {
-            to {
-                opacity: 0;
-                transform: scale(0.9);
-            }
+            to { opacity: 0; transform: scale(0.9); }
         }
 
         .delete-item-btn {
@@ -1208,21 +1123,11 @@
             transition: 0.2s;
         }
 
-        .delete-item-btn:hover {
-            opacity: 1;
-            transform: scale(1.2);
-        }
+        .delete-item-btn:hover { opacity: 1; transform: scale(1.2); }
 
         @keyframes messageFadeOut {
-            0% {
-                opacity: 1;
-                transform: scale(1) translateY(0);
-            }
-
-            100% {
-                opacity: 0;
-                transform: scale(0.8) translateY(10px);
-            }
+            0% { opacity: 1; transform: scale(1) translateY(0); }
+            100% { opacity: 0; transform: scale(0.8) translateY(10px); }
         }
 
         .message-row.deleting-msg {
@@ -1231,15 +1136,10 @@
         }
 
         @keyframes chatWipe {
-            to {
-                opacity: 0;
-                transform: translateY(20px);
-            }
+            to { opacity: 0; transform: translateY(20px); }
         }
 
-        .messages.wiping {
-            animation: chatWipe 0.4s forwards ease-in;
-        }
+        .messages.wiping { animation: chatWipe 0.4s forwards ease-in; }
 
         .sticker-menu {
             display: block;
@@ -1248,8 +1148,7 @@
             left: 12px;
             right: 12px;
             height: 162px;
-            background:
-                linear-gradient(180deg, rgba(255,255,255,0.96), rgba(246,239,255,0.96));
+            background: linear-gradient(180deg, rgba(255,255,255,0.96), rgba(246,239,255,0.96));
             border: 2px solid rgba(74, 53, 84, 0.18);
             border-radius: 22px;
             box-shadow: 0 -8px 24px rgba(74,53,84,0.2);
@@ -1374,8 +1273,7 @@
             position: absolute;
             top: 58px;
             right: 14px;
-            background:
-                linear-gradient(180deg, rgba(255,255,255,0.98), rgba(247,241,255,0.97));
+            background: linear-gradient(180deg, rgba(255,255,255,0.98), rgba(247,241,255,0.97));
             padding: 15px;
             border-radius: 18px;
             border: 1px solid rgba(74,53,84,0.14);
@@ -1400,9 +1298,7 @@
             transition: transform 0.2s;
         }
 
-        .color-option:hover {
-            transform: scale(1.15);
-        }
+        .color-option:hover { transform: scale(1.15); }
 
         .slider-label {
             font-size: 12px;
@@ -1431,9 +1327,7 @@
             margin: 8px auto 0 auto;
         }
 
-        .user-selector input {
-            display: none;
-        }
+        .user-selector input { display: none; }
 
         .user-selector label {
             padding: 5px 15px;
@@ -1505,60 +1399,22 @@
             position: relative;
         }
 
-        .message-row.mine {
-            justify-content: flex-end;
-        }
+        .message-row.mine { justify-content: flex-end; }
+        .message-row.theirs { justify-content: flex-start; }
 
-        .message-row.theirs {
-            justify-content: flex-start;
-        }
-
-        .message-row.message-animate.mine {
-            animation: messageSendPop 0.45s cubic-bezier(0.175, 0.885, 0.32, 1.275);
-        }
-
-        .message-row.message-animate.theirs {
-            animation: messageReceivePop 0.45s cubic-bezier(0.175, 0.885, 0.32, 1.275);
-        }
+        .message-row.message-animate.mine { animation: messageSendPop 0.45s cubic-bezier(0.175, 0.885, 0.32, 1.275); }
+        .message-row.message-animate.theirs { animation: messageReceivePop 0.45s cubic-bezier(0.175, 0.885, 0.32, 1.275); }
 
         @keyframes messageSendPop {
-            0% {
-                opacity: 0;
-                transform: translateX(45px) translateY(22px) scale(0.78);
-                filter: blur(5px);
-            }
-
-            65% {
-                opacity: 1;
-                transform: translateX(-6px) translateY(-4px) scale(1.06);
-                filter: blur(0);
-            }
-
-            100% {
-                opacity: 1;
-                transform: translateX(0) translateY(0) scale(1);
-                filter: blur(0);
-            }
+            0% { opacity: 0; transform: translateX(45px) translateY(22px) scale(0.78); filter: blur(5px); }
+            65% { opacity: 1; transform: translateX(-6px) translateY(-4px) scale(1.06); filter: blur(0); }
+            100% { opacity: 1; transform: translateX(0) translateY(0) scale(1); filter: blur(0); }
         }
 
         @keyframes messageReceivePop {
-            0% {
-                opacity: 0;
-                transform: translateX(-45px) translateY(22px) scale(0.78);
-                filter: blur(5px);
-            }
-
-            65% {
-                opacity: 1;
-                transform: translateX(6px) translateY(-4px) scale(1.06);
-                filter: blur(0);
-            }
-
-            100% {
-                opacity: 1;
-                transform: translateX(0) translateY(0) scale(1);
-                filter: blur(0);
-            }
+            0% { opacity: 0; transform: translateX(-45px) translateY(22px) scale(0.78); filter: blur(5px); }
+            65% { opacity: 1; transform: translateX(6px) translateY(-4px) scale(1.06); filter: blur(0); }
+            100% { opacity: 1; transform: translateX(0) translateY(0) scale(1); filter: blur(0); }
         }
 
         .msg-wrapper {
@@ -1568,13 +1424,8 @@
             position: relative;
         }
 
-        .msg-wrapper.mine {
-            align-items: flex-end;
-        }
-
-        .msg-wrapper.theirs {
-            align-items: flex-start;
-        }
+        .msg-wrapper.mine { align-items: flex-end; }
+        .msg-wrapper.theirs { align-items: flex-start; }
 
         .bubble {
             padding: 10px 24px 10px 14px;
@@ -1655,9 +1506,7 @@
             transform: scale(1.08);
         }
 
-        .bubble:hover .msg-dropdown-btn {
-            display: flex;
-        }
+        .bubble:hover .msg-dropdown-btn { display: flex; }
 
         .msg-dropdown-menu {
             display: none;
@@ -1693,35 +1542,14 @@
         }
 
         @keyframes dropdownPop {
-            0% {
-                opacity: 0;
-                transform: translateY(-8px) scale(0.88);
-                filter: blur(4px);
-            }
-
-            70% {
-                opacity: 1;
-                transform: translateY(2px) scale(1.03);
-                filter: blur(0);
-            }
-
-            100% {
-                opacity: 1;
-                transform: translateY(0) scale(1);
-                filter: blur(0);
-            }
+            0% { opacity: 0; transform: translateY(-8px) scale(0.88); filter: blur(4px); }
+            70% { opacity: 1; transform: translateY(2px) scale(1.03); filter: blur(0); }
+            100% { opacity: 1; transform: translateY(0) scale(1); filter: blur(0); }
         }
 
         @keyframes dropdownClose {
-            from {
-                opacity: 1;
-                transform: translateY(0) scale(1);
-            }
-
-            to {
-                opacity: 0;
-                transform: translateY(-8px) scale(0.92);
-            }
+            from { opacity: 1; transform: translateY(0) scale(1); }
+            to { opacity: 0; transform: translateY(-8px) scale(0.92); }
         }
 
         .msg-dropdown-menu button {
@@ -1736,13 +1564,8 @@
             transition: background 0.2s;
         }
 
-        .msg-dropdown-menu button:hover {
-            background: #f5f5f5;
-        }
-
-        .msg-dropdown-menu button.delete-msg-btn:hover {
-            color: #ff4d4d;
-        }
+        .msg-dropdown-menu button:hover { background: #f5f5f5; }
+        .msg-dropdown-menu button.delete-msg-btn:hover { color: #ff4d4d; }
 
         .timestamp {
             font-size: 10px;
@@ -1760,13 +1583,8 @@
             transition: color 0.3s ease;
         }
 
-        .tick.unread {
-            color: #888;
-        }
-
-        .tick.read {
-            color: #00bfff;
-        }
+        .tick.unread { color: #888; }
+        .tick.read { color: #00bfff; }
 
         .quote-box {
             font-size: 0.75em;
@@ -1789,10 +1607,7 @@
         }
 
         @keyframes replyJumpPulse {
-            0%, 100% {
-                box-shadow: inherit;
-            }
-
+            0%, 100% { box-shadow: inherit; }
             35% {
                 box-shadow:
                     0 0 0 3px rgba(255,246,201,0.95),
@@ -1891,10 +1706,7 @@
             box-shadow: 0 4px 10px rgba(0,0,0,0.12);
         }
 
-        .file-attachment-info {
-            flex: 1;
-            min-width: 0;
-        }
+        .file-attachment-info { flex: 1; min-width: 0; }
 
         .file-attachment-name {
             font-size: 13px;
@@ -1942,20 +1754,9 @@
         }
 
         @keyframes stickerPopIn {
-            0% {
-                opacity: 0;
-                transform: scale(0.55) rotate(-5deg);
-            }
-
-            70% {
-                opacity: 1;
-                transform: scale(1.08) rotate(2deg);
-            }
-
-            100% {
-                opacity: 1;
-                transform: scale(1) rotate(0);
-            }
+            0% { opacity: 0; transform: scale(0.55) rotate(-5deg); }
+            70% { opacity: 1; transform: scale(1.08) rotate(2deg); }
+            100% { opacity: 1; transform: scale(1) rotate(0); }
         }
 
         .save-overlay {
@@ -2023,24 +1824,12 @@
             animation: typingBounce 0.8s infinite ease-in-out;
         }
 
-        .typing-dot:nth-child(2) {
-            animation-delay: 0.12s;
-        }
-
-        .typing-dot:nth-child(3) {
-            animation-delay: 0.24s;
-        }
+        .typing-dot:nth-child(2) { animation-delay: 0.12s; }
+        .typing-dot:nth-child(3) { animation-delay: 0.24s; }
 
         @keyframes typingBounce {
-            0%, 80%, 100% {
-                transform: translateY(0);
-                opacity: 0.45;
-            }
-
-            40% {
-                transform: translateY(-5px);
-                opacity: 1;
-            }
+            0%, 80%, 100% { transform: translateY(0); opacity: 0.45; }
+            40% { transform: translateY(-5px); opacity: 1; }
         }
 
         .chat-inputs {
@@ -2207,22 +1996,15 @@
             color: #ffffff;
         }
 
-        body.dark-mode .bubble.sticker-bubble {
-            background: transparent;
-        }
+        body.dark-mode .bubble.sticker-bubble { background: transparent; }
 
         body.dark-mode .msg-dropdown-menu {
             background: #333;
             border: 1px solid #555;
         }
 
-        body.dark-mode .msg-dropdown-menu button {
-            color: #eee;
-        }
-
-        body.dark-mode .msg-dropdown-menu button:hover {
-            background: #444;
-        }
+        body.dark-mode .msg-dropdown-menu button { color: #eee; }
+        body.dark-mode .msg-dropdown-menu button:hover { background: #444; }
 
         body.dark-mode .bucket-item,
         body.dark-mode .calendar-event-item,
@@ -2272,9 +2054,7 @@
             color: #4a3554 !important;
         }
 
-        body.dark-mode .typing-indicator {
-            color: #333;
-        }
+        body.dark-mode .typing-indicator { color: #333; }
 
         #themeToggle {
             position: absolute;
@@ -2364,8 +2144,7 @@
             padding: 10px;
             border-radius: 20px;
             border: 1px solid rgba(74,53,84,0.14);
-            background:
-                linear-gradient(180deg, rgba(255,255,255,0.98), rgba(247,241,255,0.97));
+            background: linear-gradient(180deg, rgba(255,255,255,0.98), rgba(247,241,255,0.97));
             box-shadow: 0 14px 32px rgba(74,53,84,0.24);
         }
 
@@ -2387,9 +2166,7 @@
             transition: transform 0.18s ease, background 0.18s ease, box-shadow 0.18s ease;
         }
 
-        .font-option:last-child {
-            margin-bottom: 0;
-        }
+        .font-option:last-child { margin-bottom: 0; }
 
         .font-option:hover,
         .font-option.active {
@@ -2651,74 +2428,6 @@
             gap: 8px;
         }
 
-        .chat-header #onlineIndicator {
-            position: relative;
-            left: -64px;
-        }
-
-        .online-indicator {
-            width: fit-content;
-            display: inline-flex;
-            align-items: center;
-            justify-content: center;
-            gap: 6px;
-            margin: 0 auto;
-            padding: 5px 10px;
-            border-radius: 999px;
-            background: rgba(255,255,255,0.42);
-            border: 1px solid rgba(255,255,255,0.48);
-            color: #4a3554;
-            font-size: 11px;
-            font-weight: 800;
-            line-height: 1;
-            letter-spacing: 0.15px;
-            box-shadow: inset 0 1px 0 rgba(255,255,255,0.35);
-            opacity: 0.72;
-            transform: translateY(0) scale(0.98);
-            transition:
-                opacity var(--ui-normal) var(--ease-smooth),
-                background var(--ui-normal) var(--ease-smooth),
-                transform var(--ui-normal) var(--ease-smooth),
-                box-shadow var(--ui-normal) var(--ease-smooth);
-        }
-
-        .online-indicator.online {
-            opacity: 1;
-            background: rgba(222, 255, 235, 0.72);
-            box-shadow:
-                0 7px 18px rgba(46, 204, 113, 0.18),
-                inset 0 1px 0 rgba(255,255,255,0.55);
-            transform: translateY(-1px) scale(1);
-        }
-
-        .online-dot {
-            width: 8px;
-            height: 8px;
-            border-radius: 50%;
-            background: #aaa;
-            box-shadow: 0 0 0 0 rgba(160,160,160,0.28);
-            transition: background var(--ui-normal) var(--ease-smooth), box-shadow var(--ui-normal) var(--ease-smooth);
-        }
-
-        .online-indicator.online .online-dot {
-            background: #2ecc71;
-            animation: onlinePulse 1.35s ease-out infinite;
-        }
-
-        @keyframes onlinePulse {
-            0% {
-                box-shadow: 0 0 0 0 rgba(46, 204, 113, 0.55);
-            }
-
-            70% {
-                box-shadow: 0 0 0 9px rgba(46, 204, 113, 0);
-            }
-
-            100% {
-                box-shadow: 0 0 0 0 rgba(46, 204, 113, 0);
-            }
-        }
-
         .messages {
             scroll-behavior: smooth;
         }
@@ -2734,13 +2443,8 @@
             overflow: visible;
         }
 
-        .message-row.mine {
-            z-index: 2;
-        }
-
-        .message-row:has(.dropdown-open) {
-            z-index: 30;
-        }
+        .message-row.mine { z-index: 2; }
+        .message-row:has(.dropdown-open) { z-index: 30; }
 
         .msg-wrapper.theirs .msg-dropdown-menu {
             left: 0;
@@ -2772,49 +2476,19 @@
         }
 
         @keyframes messageMineArrive {
-            0% {
-                opacity: 0;
-                transform: translate3d(14px, 10px, 0) scale(0.96);
-                filter: blur(2px);
-            }
-
-            100% {
-                opacity: 1;
-                transform: translate3d(0, 0, 0) scale(1);
-                filter: blur(0);
-            }
+            0% { opacity: 0; transform: translate3d(14px, 10px, 0) scale(0.96); filter: blur(2px); }
+            100% { opacity: 1; transform: translate3d(0, 0, 0) scale(1); filter: blur(0); }
         }
 
         @keyframes messageTheirsArrive {
-            0% {
-                opacity: 0;
-                transform: translate3d(-22px, 14px, 0) scale(0.92);
-                filter: blur(3px);
-            }
-
-            72% {
-                opacity: 1;
-                transform: translate3d(2px, -1px, 0) scale(1.015);
-                filter: blur(0);
-            }
-
-            100% {
-                opacity: 1;
-                transform: translate3d(0, 0, 0) scale(1);
-                filter: blur(0);
-            }
+            0% { opacity: 0; transform: translate3d(-22px, 14px, 0) scale(0.92); filter: blur(3px); }
+            72% { opacity: 1; transform: translate3d(2px, -1px, 0) scale(1.015); filter: blur(0); }
+            100% { opacity: 1; transform: translate3d(0, 0, 0) scale(1); filter: blur(0); }
         }
 
         @keyframes messageLandSoftly {
-            0% {
-                opacity: 0.4;
-                transform: translate3d(4px, 5px, 0) scale(0.985);
-            }
-
-            100% {
-                opacity: 1;
-                transform: translate3d(0, 0, 0) scale(1);
-            }
+            0% { opacity: 0.4; transform: translate3d(4px, 5px, 0) scale(0.985); }
+            100% { opacity: 1; transform: translate3d(0, 0, 0) scale(1); }
         }
 
         .message-flight {
@@ -2858,6 +2532,14 @@
             border: 2px solid #111;
             box-shadow:
                 inset 0 1px 0 rgba(255,255,255,0.8),
+                0 8px 18px rgba(74,53,84,0.16);
+            transition: border-color 0.2s ease, box-shadow 0.2s ease;
+        }
+
+        body.paint-mode .whiteboard-board {
+            border-color: #8a2be2;
+            box-shadow:
+                inset 0 0 0 2px rgba(138, 43, 226, 0.15),
                 0 8px 18px rgba(74,53,84,0.16);
         }
 
@@ -2904,9 +2586,7 @@
             padding: 2px;
         }
 
-        .whiteboard-tabs::-webkit-scrollbar {
-            display: none;
-        }
+        .whiteboard-tabs::-webkit-scrollbar { display: none; }
 
         .whiteboard-tab {
             flex: 0 0 34px;
@@ -3026,9 +2706,7 @@
             transition: left 0.035s linear, top 0.035s linear;
         }
 
-        .remote-drawing-cursor.visible {
-            display: block;
-        }
+        .remote-drawing-cursor.visible { display: block; }
 
         .remote-cursor-crosshair {
             position: relative;
@@ -3072,32 +2750,6 @@
             font-size: 10px;
             font-weight: 800;
             white-space: nowrap;
-        }
-
-        .drawing-status-dot {
-            display: inline-flex;
-            align-items: center;
-            justify-content: center;
-            width: 18px;
-            height: 18px;
-            border-radius: 50%;
-            background: rgba(138,43,226,0.16);
-            color: #8a2be2;
-            font-size: 12px;
-            font-weight: 900;
-        }
-
-        .online-indicator.online {
-            background: rgba(255, 222, 242, 0.78);
-            box-shadow:
-                0 7px 18px rgba(255, 77, 157, 0.18),
-                inset 0 1px 0 rgba(255,255,255,0.55);
-        }
-
-        .online-indicator.online .drawing-status-dot {
-            background: #ff4d9d;
-            color: white;
-            animation: onlinePulse 1.1s ease-out infinite;
         }
 
         .whiteboard-fullscreen-btn {
@@ -3157,15 +2809,8 @@
         }
 
         @keyframes whiteboardExpand {
-            from {
-                opacity: 0.55;
-                transform: scale(0.965);
-            }
-
-            to {
-                opacity: 1;
-                transform: scale(1);
-            }
+            from { opacity: 0.55; transform: scale(0.965); }
+            to { opacity: 1; transform: scale(1); }
         }
 
         body.paint-mode #app-wrapper {
@@ -3211,9 +2856,7 @@
             will-change: left, top, width, height;
         }
 
-        .eraser-radius-cursor.visible {
-            display: block;
-        }
+        .eraser-radius-cursor.visible { display: block; }
 
         .whiteboard-hint {
             display: none;
@@ -3240,137 +2883,164 @@
             transform: translateX(-50%) translateY(8px);
         }
 
-        #app-wrapper {
-            z-index: 2;
-        }
+        #app-wrapper { z-index: 2; }
 
+        /* --- New, Cleaner Paint Toolbar UI --- */
         .paint-box {
             width: 100%;
             display: flex;
             flex-direction: column;
-            gap: 10px;
+            gap: 14px;
         }
 
-        .paint-toolbar {
-            display: grid;
-            grid-template-columns: repeat(2, minmax(0, 1fr));
+        .paint-modes {
+            display: flex;
             gap: 8px;
-            width: 100%;
-            font-family: 'Fredoka', sans-serif;
         }
 
-        .paint-toolbar button,
-        .selfie-modal-card button {
+        .paint-mode-btn {
+            flex: 1;
+            padding: 10px;
             border: none;
-            border-radius: 999px;
-            padding: 9px 12px;
-            background: linear-gradient(135deg, #b19cd9, #8a2be2);
-            color: white;
-            font-family: 'Fredoka', sans-serif;
-            font-weight: 800;
-            cursor: pointer;
-            transition: transform 0.2s, filter 0.2s;
-        }
-
-        .paint-toolbar button:hover,
-        .selfie-modal-card button:hover {
-            transform: scale(1.06);
-            filter: brightness(1.1);
-        }
-
-        .paint-toolbar button:active,
-        .selfie-modal-card button:active {
-            transform: scale(0.96);
-        }
-
-        .paint-toolbar button:disabled {
-            opacity: 0.42;
-            cursor: not-allowed;
-            filter: grayscale(0.35);
-        }
-
-        .paint-toolbar button.active {
-            background: linear-gradient(135deg, #fff6c9, #ffe28d);
+            border-radius: 12px;
+            background: rgba(255,255,255,0.4);
             color: #4a3554;
-            box-shadow: inset 0 0 0 2px rgba(74, 53, 84, 0.35);
-        }
-
-        .paint-control-row {
-            grid-column: 1 / -1;
+            font-family: 'Fredoka', sans-serif;
+            font-weight: 700;
+            font-size: 13px;
+            cursor: pointer;
+            transition: all 0.2s;
             display: flex;
             align-items: center;
-            gap: 9px;
-            padding: 8px 10px;
-            border-radius: 18px;
-            background: rgba(255,255,255,0.38);
+            justify-content: center;
+            gap: 6px;
+            box-shadow: inset 0 0 0 1px rgba(74,53,84,0.05);
         }
 
-        .paint-label {
-            font-size: 12px;
+        .paint-mode-btn:hover {
+            background: rgba(255,255,255,0.6);
+        }
+
+        .paint-mode-btn.active {
+            background: linear-gradient(135deg, #b19cd9, #8a2be2);
+            color: white;
+            box-shadow: 0 4px 10px rgba(138, 43, 226, 0.3);
+        }
+
+        .paint-brush-section, .paint-settings {
+            display: flex;
+            flex-direction: column;
+            gap: 8px;
+        }
+
+        .paint-section-label {
+            font-size: 11px;
             font-weight: 800;
             color: #4a3554;
-            flex-shrink: 0;
-        }
-
-        .paint-toolbar input[type="color"] {
-            width: 36px;
-            height: 36px;
-            padding: 0;
-            border: 2px solid rgba(74, 53, 84, 0.45);
-            border-radius: 50%;
-            background: transparent;
-            overflow: hidden;
-            cursor: pointer;
-            flex-shrink: 0;
-        }
-
-        .paint-toolbar input[type="range"] {
-            width: 100%;
-            min-width: 0;
-        }
-
-        .paint-brush-picker {
-            flex-direction: column;
-            align-items: stretch;
-            gap: 7px;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+            opacity: 0.7;
         }
 
         .paint-brush-grid {
             display: grid;
-            grid-template-columns: repeat(3, minmax(0, 1fr));
+            grid-template-columns: repeat(3, 1fr);
             gap: 6px;
         }
 
-        .paint-toolbar .paint-brush-btn {
-            min-width: 0;
+        .paint-brush-btn {
             padding: 8px 4px;
-            border-radius: 11px;
-            font-size: 11px;
-            letter-spacing: 0.1px;
-        }
-
-        .paint-toolbar .paint-brush-btn[data-brush="marker"] {
-            background: linear-gradient(135deg, #ffe89c, #f5a8ef);
-        }
-
-        .paint-toolbar .paint-brush-btn[data-brush="pencil"] {
-            background: linear-gradient(135deg, #dee5f5, #8e99bc);
-        }
-
-        .paint-toolbar .paint-brush-btn[data-brush="chalk"] {
-            background: linear-gradient(135deg, #f6f0ff, #c8abff);
-        }
-
-        .paint-toolbar .paint-brush-btn[data-brush="spray"] {
-            background: linear-gradient(135deg, #daefff, #82cdfc);
-        }
-
-        .paint-toolbar .paint-brush-btn.active {
+            border: 1px solid transparent;
+            border-radius: 10px;
+            background: rgba(255,255,255,0.4);
             color: #4a3554;
-            box-shadow:
-                inset 0 0 0 2px rgba(74, 53, 84, 0.48),
-                0 4px 9px rgba(74,53,84,0.18);
-            filter: saturate(1.1) brightness(1.04);
+            font-family: 'Fredoka', sans-serif;
+            font-size: 11px;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.2s;
+        }
+
+        .paint-brush-btn:hover {
+            background: rgba(255,255,255,0.7);
+        }
+
+        .paint-brush-btn.active {
+            background: white;
+            border-color: #8a2be2;
+            color: #8a2be2;
+            box-shadow: 0 2px 6px rgba(138, 43, 226, 0.15);
+        }
+
+        .paint-control-row {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            padding: 8px 12px;
+            border-radius: 12px;
+            background: rgba(255,255,255,0.3);
+        }
+
+        .paint-label {
+            font-size: 12px;
+            font-weight: 700;
+            color: #4a3554;
+            min-width: 35px;
+        }
+
+        .paint-control-row input[type="color"] {
+            width: 32px;
+            height: 32px;
+            border: 2px solid white;
+            border-radius: 50%;
+            background: transparent;
+            cursor: pointer;
+            padding: 0;
+            box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+            overflow: hidden;
+        }
+
+        .paint-control-row input[type="range"] {
+            flex: 1;
+        }
+
+        .paint-actions {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 8px;
+        }
+
+        .paint-action-btn {
+            padding: 8px;
+            border: none;
+            border-radius: 10px;
+            background: rgba(255,255,255,0.4);
+            color: #4a3554;
+            font-family: 'Fredoka', sans-serif;
+            font-weight: 600;
+            font-size: 12px;
+            cursor: pointer;
+            transition: all 0.2s;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 4px;
+        }
+
+        .paint-action-btn:hover {
+            background: rgba(255,255,255,0.7);
+            transform: translateY(-1px);
+        }
+
+        .paint-action-btn:disabled {
+            opacity: 0.4;
+            cursor: not-allowed;
+            transform: none;
+        }
+
+        .paint-action-btn.danger:hover {
+            background: rgba(255, 77, 77, 0.2);
+            color: #ff4d4d;
         }
 
         .paint-hint {
@@ -3429,6 +3099,27 @@
             margin-top: 12px;
         }
 
+        .selfie-modal-card button {
+            border: none;
+            border-radius: 999px;
+            padding: 9px 12px;
+            background: linear-gradient(135deg, #b19cd9, #8a2be2);
+            color: white;
+            font-family: 'Fredoka', sans-serif;
+            font-weight: 800;
+            cursor: pointer;
+            transition: transform 0.2s, filter 0.2s;
+        }
+
+        .selfie-modal-card button:hover {
+            transform: scale(1.06);
+            filter: brightness(1.1);
+        }
+
+        .selfie-modal-card button:active {
+            transform: scale(0.96);
+        }
+
         .selfie-status {
             margin-top: 10px;
             color: #4a3554;
@@ -3461,6 +3152,21 @@
             color: #4a3554;
         }
 
+        body.dark-mode .paint-mode-btn,
+        body.dark-mode .paint-brush-btn,
+        body.dark-mode .paint-action-btn,
+        body.dark-mode .paint-control-row {
+            background: rgba(255,255,255,0.08);
+            color: #f4ebff;
+        }
+
+        body.dark-mode .paint-mode-btn.active,
+        body.dark-mode .paint-brush-btn.active {
+            background: linear-gradient(135deg, #b19cd9, #8a2be2);
+            color: white;
+            border-color: transparent;
+        }
+
         .app-panel,
         .app-panel::before {
             background-color: rgb(var(--box-base-rgb)) !important;
@@ -3471,8 +3177,6 @@
             .app-panel,
             .message-row,
             .message-flight,
-            .online-indicator,
-            .online-dot,
             body::after,
             #whiteboardCanvas {
                 animation-duration: 0.01ms !important;
@@ -3671,37 +3375,41 @@
                         </div>
 
                         <div class="paint-box">
-                            <div id="paintToolbar" class="paint-toolbar">
-                                <button id="paintToggleBtn" onclick="togglePaintMode()" title="Draw on the whiteboard">✏️ Draw</button>
-                                <button id="paintEraserBtn" onclick="toggleEraserMode()" title="Erase the whiteboard drawing">Eraser</button>
-                                <button onclick="undoSharedDrawing()" title="Undo your last whiteboard stroke">Undo</button>
-                                <button id="paintRedoBtn" onclick="redoSharedDrawing()" title="Redo your last undone stroke" disabled>Redo</button>
-                                <button onclick="addWhiteboardNote()" title="Add a handwritten typed note">📝 Note</button>
-                                <button onclick="clearSharedDrawing()" title="Clear this saved whiteboard">Clear</button>
+                            <div class="paint-modes">
+                                <button id="paintToggleBtn" class="paint-mode-btn" onclick="togglePaintMode()" title="Draw on the whiteboard">✏️ Draw</button>
+                                <button id="paintEraserBtn" class="paint-mode-btn" onclick="toggleEraserMode()" title="Erase the whiteboard drawing">🧽 Eraser</button>
+                            </div>
+                            
+                            <div class="paint-brush-section">
+                                <span class="paint-section-label">Brush Type</span>
+                                <div class="paint-brush-grid" role="group" aria-label="Brush texture">
+                                    <button type="button" class="paint-brush-btn active" data-brush="smooth" onclick="setPaintBrush('smooth')" title="Clean smooth line">Smooth</button>
+                                    <button type="button" class="paint-brush-btn" data-brush="marker" onclick="setPaintBrush('marker')" title="Translucent marker">Marker</button>
+                                    <button type="button" class="paint-brush-btn" data-brush="pencil" onclick="setPaintBrush('pencil')" title="Textured pencil">Pencil</button>
+                                    <button type="button" class="paint-brush-btn" data-brush="chalk" onclick="setPaintBrush('chalk')" title="Dusty chalk">Chalk</button>
+                                    <button type="button" class="paint-brush-btn" data-brush="spray" onclick="setPaintBrush('spray')" title="Spray paint">Spray</button>
+                                </div>
+                            </div>
 
+                            <div class="paint-settings">
                                 <div class="paint-control-row">
-                                    <span class="paint-label">Colour</span>
+                                    <span class="paint-label">Color</span>
                                     <input id="paintColor" type="color" value="#8a2be2" title="Paint color">
                                 </div>
-
                                 <div class="paint-control-row">
                                     <span class="paint-label">Size</span>
                                     <input id="paintSize" type="range" min="2" max="22" value="7" title="Paint size">
                                 </div>
-
-                                <div class="paint-control-row paint-brush-picker">
-                                    <span class="paint-label">Brush texture</span>
-                                    <div class="paint-brush-grid" role="group" aria-label="Brush texture">
-                                        <button type="button" class="paint-brush-btn active" data-brush="smooth" onclick="setPaintBrush('smooth')" title="Clean smooth line">Smooth</button>
-                                        <button type="button" class="paint-brush-btn" data-brush="marker" onclick="setPaintBrush('marker')" title="Translucent marker">Marker</button>
-                                        <button type="button" class="paint-brush-btn" data-brush="pencil" onclick="setPaintBrush('pencil')" title="Textured pencil">Pencil</button>
-                                        <button type="button" class="paint-brush-btn" data-brush="chalk" onclick="setPaintBrush('chalk')" title="Dusty chalk">Chalk</button>
-                                        <button type="button" class="paint-brush-btn" data-brush="spray" onclick="setPaintBrush('spray')" title="Spray paint">Spray</button>
-                                    </div>
-                                </div>
                             </div>
 
-                            <div class="paint-hint">Ten boards autosave. Draw together live, or add a handwritten typed note.</div>
+                            <div class="paint-actions">
+                                <button class="paint-action-btn" onclick="undoSharedDrawing()" title="Undo your last whiteboard stroke">↩️ Undo</button>
+                                <button class="paint-action-btn" id="paintRedoBtn" onclick="redoSharedDrawing()" title="Redo your last undone stroke" disabled>↪️ Redo</button>
+                                <button class="paint-action-btn" onclick="addWhiteboardNote()" title="Add a handwritten typed note">📝 Note</button>
+                                <button class="paint-action-btn danger" onclick="clearSharedDrawing()" title="Clear this saved whiteboard">🗑️ Clear</button>
+                            </div>
+
+                            <div class="paint-hint">10 boards autosave. Draw together live, or add a typed note.</div>
                         </div>
                     </div>
                 </div>
@@ -3813,11 +3521,6 @@
                 </div>
 
                 <div class="chat-header">
-                    <div id="onlineIndicator" class="online-indicator away" title="Shared drawing status">
-                        <span class="drawing-status-dot">✎</span>
-                        <span id="onlineText">No one drawing</span>
-                    </div>
-
                     <div class="user-selector">
                         <input type="radio" id="userShanky" name="userName" value="Shanky" onchange="changeUser(this)">
                         <label for="userShanky">Shanky</label>
@@ -4614,19 +4317,6 @@
             set(myDrawingPresenceRef, payload);
         };
 
-        const renderDrawingIndicator = (presenceData) => {
-            const indicator = document.getElementById('onlineIndicator');
-            const text = document.getElementById('onlineText');
-            const partner = getWhiteboardPartnerName();
-            if (!indicator || !text) return;
-
-            const isFresh = Boolean(presenceData?.isDrawing && Date.now() - Number(presenceData.timestamp || 0) < 1600);
-            indicator.classList.toggle('online', isFresh);
-            indicator.classList.toggle('away', !isFresh);
-            text.innerText = isFresh ? `${partner} is drawing · Board ${Number(presenceData.page) + 1}` : `${partner} not drawing`;
-            indicator.title = isFresh ? `${partner} is currently drawing on whiteboard ${Number(presenceData.page) + 1}` : `Waiting for ${partner} to draw`;
-        };
-
         const renderRemoteCursor = (presenceData) => {
             const cursor = document.getElementById('remoteDrawingCursor');
             const label = document.getElementById('remoteCursorName');
@@ -5063,11 +4753,9 @@
         onDisconnect(myDrawingPresenceRef).set({ isDrawing: false, timestamp: Date.now(), page: activeWhiteboardPage, user: currentUser });
         onValue(child(whiteboardPresenceRootRef, getWhiteboardPartnerName()), (snapshot) => {
             remoteDrawingPresence = snapshot.exists() ? snapshot.val() : null;
-            renderDrawingIndicator(remoteDrawingPresence);
             renderRemoteCursor(remoteDrawingPresence);
         });
         remoteCursorTimer = setInterval(() => {
-            renderDrawingIndicator(remoteDrawingPresence);
             renderRemoteCursor(remoteDrawingPresence);
             if (remoteLiveStroke && Date.now() - Number(remoteLiveStroke.updatedAt || 0) >= 1900) {
                 remoteLiveStroke = null;
@@ -5159,10 +4847,6 @@
             });
         };
 
-        const renderOnlineIndicator = () => {
-            renderDrawingIndicator(remoteDrawingPresence);
-        };
-
         window.addEventListener('focus', () => updateMyStatus());
         window.addEventListener('blur', () => updateMyStatus());
         document.addEventListener('visibilitychange', () => updateMyStatus());
@@ -5189,14 +4873,7 @@
                         }
                     });
                 }
-
-                renderOnlineIndicator(latestOtherStatusData);
             });
-
-            clearInterval(statusWatchdog);
-            statusWatchdog = setInterval(() => {
-                renderOnlineIndicator(latestOtherStatusData);
-            }, 2000);
         };
 
         listenToOtherUserStatus();
